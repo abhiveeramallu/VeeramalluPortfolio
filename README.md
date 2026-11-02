@@ -1,141 +1,78 @@
-# Personal Portfolio — Design Engineer & Creative Developer
+# abhiram.design — portfolio
 
-A production-ready personal portfolio website built with **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, **Framer Motion**, **Lenis**, and **Three.js (React Three Fiber + Drei)**.
+Personal portfolio of Sai Abhiram, product designer & design engineer. Next.js 14 (App Router), TypeScript, Tailwind, React Three Fiber + drei, Framer Motion, Lenis.
 
-Designed in a **playful-premium, clean, confident, light-theme** visual language with tactile micro-interactions, soft pastel 3D materials, editorial typography, and full SEO.
+- **Home**: hero with availability, proof stats and CTAs; a WebGL object system that assembles into "A"; bento case studies; inverted Process section; playground; contact.
+- **Case studies** (`/work/[slug]`): TL;DR → problem → constraints → process → decisions → gallery (lightbox, before/after slider, token inspector) → outcome → retro → next.
+- **Playground** (`/playground/[slug]`): GLSL flow gradient, Hungarian assignment game, contrast-ramp tool, Web Audio synth, clay material toy.
+- **AI assistant**: streaming, grounded in `data/content.ts`, works without an API key.
+- **Extras**: command palette (`?`, ⌘K or the Konami code), `/resume.pdf` generated from content, dynamic OG images, opt-in dark theme.
 
----
+Design and engineering decisions are in [docs/DECISIONS.md](docs/DECISIONS.md); the pre-upgrade audit is in [docs/AUDIT.md](docs/AUDIT.md).
 
-## 🎨 Design Tokens & Color Palette
-
-All colors are controlled via CSS variables in `app/globals.css` and extended in `tailwind.config.ts`:
-
-- `--bg: #F6F4EF` (warm off-white foundation)
-- `--surface: #FFFFFF` (clean card elevation)
-- `--ink: #111111` (high-contrast primary text)
-- `--muted: #6B6B66` (subtle secondary text)
-- `--line: #E4E0D8` (1px delicate borders)
-- `--accent: #FF5A1F` (vivid orange: CTAs, cursor, highlights)
-- `--accent-2: #5B5BFF` (electric indigo: links & 3D accents)
-- `--accent-3: #C6F432` (lime: badges & hover flashes)
-- `--soft-pink: #FFD6E8` & `--soft-blue: #D6E6FF` (pastel card backgrounds)
-
-### Typography
-- **Display:** Space Grotesk (clamp 48px to 160px, tight tracking)
-- **Body:** Inter (relaxed leading, 16–18px)
-- **Mono:** JetBrains Mono (uppercase small labels, years, tags)
-- **Serif Italic:** Instrument Serif (for the accent word in major headlines)
-
----
-
-## 📁 Project Structure
-
-```
-portfolio/
-├── app/
-│   ├── layout.tsx             # Root layout with fonts, JSON-LD Person schema, Lenis, Cursor & AI drawer
-│   ├── page.tsx               # Home Page (all 7 sections in exact order)
-│   ├── globals.css            # CSS variables, custom scrollbar, grain texture & print styles
-│   ├── sitemap.ts             # Dynamic XML sitemap generator
-│   ├── robots.ts              # Search engine robots configuration
-│   ├── not-found.tsx          # Custom 404 page
-│   ├── about/
-│   │   └── page.tsx           # Journey page (timeline, story, values, 3D portrait, tools)
-│   ├── work/
-│   │   ├── page.tsx           # Filterable projects grid (All, Product, Systems, Creative, Brand)
-│   │   └── [slug]/
-│   │       └── page.tsx       # Dynamic case study template (hero, problem, solution, process, next project)
-│   ├── playground/
-│   │   └── page.tsx           # Interactive labs (Hungarian matrix game, WCAG palette tool, audio pad)
-│   ├── contact/
-│   │   └── page.tsx           # Direct transmission form with validation & copy email
-│   └── api/
-│       ├── chat/
-│       │   └── route.ts       # AI chat route with Claude API integration + context engine
-│       └── contact/
-│           └── route.ts       # Contact submission route with Resend API support
-├── components/
-│   ├── 3d/
-│   │   ├── SoftAvatar.tsx     # MeshPhysicalMaterial soft glossy 3D avatar & satellites
-│   │   ├── HeroAvatarScene.tsx # R3F Canvas with mouse parallax & viewport pausing
-│   │   └── SceneWrapper.tsx   # Lazy dynamic import with prefers-reduced-motion fallback
-│   ├── ui/
-│   │   ├── CustomCursor.tsx   # Morphing cursor (pointer-hand SVG, click ripple, label pills)
-│   │   ├── Navbar.tsx         # Floating pill navbar (shrinks/blurs on scroll, active indicator)
-│   │   ├── Footer.tsx         # Live local time (IST), copy email with toast, social links
-│   │   ├── AskMeChat.tsx      # Floating "Ask me" AI chat drawer
-│   │   ├── SmoothScroll.tsx   # Lenis smooth scroll provider
-│   │   ├── ContactModal.tsx   # Animated modal contact form
-│   │   └── GrainOverlay.tsx   # Subtle tactile noise texture
-│   └── home/
-│       ├── HeroSection.tsx    # Multi-script name marquee + 3D avatar + H1
-│       ├── SkillsMarquee.tsx  # Opposite scrolling pills (pauses on hover, flashes lime)
-│       ├── ExperienceStrip.tsx# "4+ years..." with floating tool logos
-│       ├── SelectedProjects.tsx# 2-column pastel cards with 3D tilt
-│       ├── ProcessSection.tsx # Sticky scroll-driven 7-step process
-│       ├── SideProjects.tsx   # Bento grid of toys, tools & games
-│       └── ContactCTA.tsx     # Big "Open to roles" CTA + transmission modal
-├── data/
-│   └── content.ts             # SINGLE SOURCE OF TRUTH: edit all content, projects & bio here!
-├── lib/
-│   └── utils.ts               # cn helper (clsx + tailwind-merge)
-├── public/                    # Static assets
-├── next.config.mjs            # Next.js 14 config with transpiled Three.js packages
-├── tailwind.config.ts         # Tailwind design tokens
-├── tsconfig.json              # Strict TypeScript config with @/ path aliases
-└── package.json
-```
-
----
-
-## ⚡ Setup & Local Development
+## Setup
 
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Run local development server
-npm run dev
-
-# 3. Build for production (pre-renders all 18 pages)
-npm run build
-
-# 4. Run production server
-npm run start
+npm install          # .npmrc sets legacy-peer-deps (an optional peer of @vercel/analytics)
+cp .env.example .env.local
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+| Script                            | What it does                                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`                     | Dev server                                                                                                                     |
+| `npm run build` / `npm start`     | Production build / serve                                                                                                       |
+| `npm run lint`                    | ESLint (`next/core-web-vitals` + typescript-eslint, no `any`, zero warnings)                                                   |
+| `npm run typecheck`               | `tsc --noEmit` (strict)                                                                                                        |
+| `npm run format` / `format:check` | Prettier                                                                                                                       |
+| `npm test`                        | Vitest unit tests (contrast matrix, Hungarian solver, validation, chat guardrails, content integrity, résumé)                  |
+| `npm run test:e2e`                | Playwright smoke tests against the production build (run `npm run build` first; first time: `npx playwright install chromium`) |
 
----
+CI (`.github/workflows/ci.yml`) runs install → lint → typecheck → format check → unit tests → build → Playwright.
 
-## 🚀 Vercel Deployment
+## Environment variables
 
-1. Push this repository to GitHub or GitLab.
-2. Import the repository in [Vercel](https://vercel.com/).
-3. Framework Preset: **Next.js**.
-4. (Optional) Set environment variables:
-   - `ANTHROPIC_API_KEY`: For real-time Claude 3 Haiku answers in the "Ask Me" drawer (works with zero-config built-in intelligent fallback if not set).
-   - `RESEND_API_KEY`: For sending real emails from the contact form (logs and falls back gracefully if not set).
-5. Click **Deploy**.
+All optional — see [.env.example](.env.example).
 
----
+| Variable                                                   | Effect when unset                                                      |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                                     | Falls back to the Vercel production URL, then `https://abhiram.design` |
+| `ANTHROPIC_API_KEY`                                        | Chat answers from the canned FAQ                                       |
+| `CLAUDE_MODEL`                                             | `claude-opus-5-5`                                                      |
+| `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL` | Contact form offers a pre-filled email instead of sending              |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`       | Rate limits are in-memory per instance                                 |
+| `NEXT_PUBLIC_ENABLE_ANALYTICS=true`                        | Analytics and Speed Insights are not loaded                            |
 
-## 📋 Single Source of Truth (`data/content.ts`)
+## Replacing content and assets
 
-To customize the entire website with your own information, edit **only** [`data/content.ts`](file:///Users/vabhiram/Documents/portfolio/data/content.ts):
-- Name, brand name, role, location, tagline, subline
-- Status & availability
-- Email & social links
-- Transliterations for the hero marquee
-- 6 Selected Projects (title, slug, category, year, metrics, problem, solution, process, outcomes)
-- 4 Side projects / experiments
-- Experience journey entries & core values
+**All copy** lives in `data/content.ts`. Anything marked `// TODO: verify` is a number or claim to confirm (or delete) before launch.
 
----
+| Asset                    | Where                                    | Notes                                                                                             |
+| ------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Project cover            | `public/projects/<slug>/cover.webp`      | 16:10, ≥1600 px wide. Replaces the generated art on cards, case study hero and 404                |
+| Process / gallery images | `public/projects/<slug>/<media id>.webp` | IDs are in each project's `process[].media.id` and `gallery[].id` (e.g. `process-1`, `gallery-2`) |
+| Testimonials             | `testimonials` in content                | Set `placeholder: false` on real ones; placeholders never render in production                    |
+| Booking link             | `bookingUrl` in content                  | Switches the hero's secondary CTA to "Book a call"                                                |
+| Portrait                 | `app/about/page.tsx` (marked TODO)       | Swap the illustration tile for `next/image`                                                       |
+| Résumé                   | generated from content at build          | Edit `lib/resume/build.ts` for layout                                                             |
 
-## 📦 Assets to Supply (Optional Customization)
+`avif`, `webp`, `png` and `jpg` are all detected; next/image serves AVIF/WebP with a brand-tinted blur placeholder.
 
-1. **Favicon / Logo:** Replace default SVGs in `public/favicon.ico`.
-2. **Open Graph Image:** Add a 1200×630px banner at `public/og-image.png`.
-3. **Project Screenshots:** Replace placeholder mockups with screenshots in `public/projects/`.
-4. **Custom 3D GLB Model:** If you want a custom Draco-compressed model instead of the procedural `SoftAvatar.tsx`, place your `.glb` in `public/models/` and load it via `useGLTF`.
+## Performance notes
+
+- First paint never waits for 3D: the hero SVG is server-rendered; the WebGL chunk loads on the first interaction and cross-fades in.
+- Budgets: first-load JS on `/` is ~170 KB (limit 200 KB, 3D excluded). Only the two hero fonts are preloaded.
+- Lighthouse (mobile, simulated throttling, local production build): **home 92 / 100 / 100 / 100**, case study 92 / 100 / 100 / 100, CLS ≤ 0.01, TBT ≤ 90 ms. Simulated LCP is ~3.2 s while observed LCP is 0.25 s (the H1 paints on the first frame); Lighthouse's model charges the hydration JS to LCP. Use Speed Insights field data after launch.
+- The `/playground/flow-gradient` page compiles a shader on load (TBT ~1.2 s in Lighthouse); that cost is the experiment itself.
+
+## Deployment checklist
+
+- [ ] Verify every `// TODO: verify` in `data/content.ts`; replace placeholder testimonials or leave them hidden
+- [ ] Domain connected; set `NEXT_PUBLIC_SITE_URL`
+- [ ] `RESEND_API_KEY` + a verified sender domain; send yourself a test message
+- [ ] `ANTHROPIC_API_KEY` (optional) and ask the chat the four suggested questions
+- [ ] `NEXT_PUBLIC_ENABLE_ANALYTICS=true` on Vercel
+- [ ] Check `/opengraph-image` and a case study's OG card in a social preview tool
+- [ ] Submit `/sitemap.xml` in Google Search Console; request indexing for `/` and the top case studies
+- [ ] Run Lighthouse on the deployed URL (mobile) and compare with the numbers above
+- [ ] Open `/resume.pdf` and check it reads correctly
