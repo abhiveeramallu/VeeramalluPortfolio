@@ -1,151 +1,140 @@
-import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowUpRight, GraduationCap, Award, Briefcase, Heart, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, FileDown } from 'lucide-react';
 import { SITE_CONFIG } from '@/data/content';
-import { StaticAvatarFallback } from '@/components/3d/SceneWrapper';
+import { HeroFallback } from '@/components/3d/HeroFallback';
+import { TrackedLink } from '@/components/ui/TrackedLink';
+import { JsonLd } from '@/components/ui/JsonLd';
+import { breadcrumbJsonLd } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Journey & Story',
-  description: `The background, engineering philosophy, and timeline of ${SITE_CONFIG.name}.`,
+  title: 'About',
+  description: `How ${SITE_CONFIG.name} works: background, principles, experience and tools.`,
+  alternates: { canonical: '/about' },
 };
 
 export default function AboutPage() {
   return (
-    <div className="pt-32 pb-24 px-6 sm:px-12 max-w-6xl mx-auto space-y-24 text-left">
-      
-      {/* Page Header */}
-      <div className="pb-12 border-b border-line flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="text-accent font-mono text-xs font-bold uppercase tracking-wider mb-2">
-            // JOURNEY &amp; PHILOSOPHY
-          </div>
-          <h1 className="font-display text-4xl sm:text-6xl font-bold tracking-tight text-ink">
-            Crafting with <span className="font-serif italic font-normal text-accent">rigor</span> and delight.
+    <div className="mx-auto max-w-6xl space-y-28 px-6 pb-24 pt-32 sm:px-12">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'About', path: '/about' },
+        ])}
+      />
+
+      <section className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <p className="eyebrow mb-3 text-orange-600">About</p>
+          <h1 className="type-h1 text-ink">
+            Designer by training, <span className="accent-word text-indigo-600">engineer</span> by habit.
           </h1>
+          <div className="mt-8 max-w-xl space-y-5 text-step-0 leading-relaxed text-muted">
+            <p>
+              I’m <strong className="font-semibold text-ink">{SITE_CONFIG.name}</strong>, a{' '}
+              {SITE_CONFIG.role.toLowerCase()} in {SITE_CONFIG.location}. I study computer science at VIT and
+              spend most evenings shipping things.
+            </p>
+            <p>
+              My favourite problems have maths under the hood — a matching algorithm, a classifier, a local
+              LLM — and a person on top who needs to understand it in one glance. I sketch the interface, then
+              build it in React so I can test it with real data and real latency.
+            </p>
+            <p>
+              I care about accessibility budgets as much as springs and shaders. The best compliment I get is
+              “that was obvious”.
+            </p>
+          </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/work" className="btn-primary">
+              See the work
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <TrackedLink
+              href="/resume.pdf"
+              event="resume_download"
+              props={{ location: 'about' }}
+              className="btn-secondary"
+              download
+            >
+              <FileDown className="h-4 w-4" aria-hidden="true" />
+              Résumé
+            </TrackedLink>
+          </div>
         </div>
-        <p className="font-sans text-base text-muted max-w-md leading-relaxed">
-          A personal timeline of turning algorithms into tactile interfaces, backed by computer science foundations and creative computing.
-        </p>
-      </div>
-
-      {/* Story & Portrait Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        <div className="lg:col-span-7 space-y-6 text-muted font-sans text-base sm:text-lg leading-relaxed">
-          <p>
-            I'm <strong className="text-ink font-semibold">{SITE_CONFIG.name}</strong>, a {SITE_CONFIG.role} based in {SITE_CONFIG.location}.
-          </p>
-          <p>
-            My work lives where mathematics meets tactile interface design. Rather than designing purely static rectangles or writing backend services in isolation, I prototype in real code—combining Next.js, Three.js shaders, and design tokens into cohesive products.
-          </p>
-          <p>
-            Whether formulating Hungarian algorithm cost matrices for multi-tenant delivery or tuning local Ollama LLMs for private document extraction, I believe software should always feel obvious, human, and thoughtfully weighted.
-          </p>
+        {/* TODO: replace with a real portrait at /public/about/portrait.webp */}
+        <div className="relative rounded-card border border-line bg-soft-yellow p-8 lg:col-span-5">
+          <HeroFallback className="mx-auto w-full max-w-sm" />
         </div>
+      </section>
 
-        {/* Tactile 3D / Illustrated Portrait Tile */}
-        <div className="lg:col-span-5 rounded-card bg-surface border border-line p-8 shadow-card flex items-center justify-center">
-          <StaticAvatarFallback />
-        </div>
-      </div>
-
-      {/* Core Values Section */}
-      <div className="space-y-8">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-wider text-accent font-bold block mb-1">
-            // CORE PILLARS
-          </span>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-ink">
-            Guiding <span className="font-serif italic font-normal text-accent-2">Principles</span>.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section aria-labelledby="principles-title">
+        <p className="eyebrow mb-3 text-orange-600">Principles</p>
+        <h2 id="principles-title" className="type-h2 mb-10 text-ink">
+          Three things I <span className="accent-word text-orange-600">won’t</span> compromise on.
+        </h2>
+        <ol className="grid grid-cols-1 gap-6 md:grid-cols-12">
           {SITE_CONFIG.values.map((v, i) => (
-            <div
+            <li
               key={v.title}
-              className="p-6 rounded-card bg-surface border border-line shadow-soft space-y-3 card-hover-lift"
+              className={`rounded-card border border-line bg-surface p-7 ${i === 0 ? 'md:col-span-6 md:row-span-2 md:bg-soft-pink' : 'md:col-span-6'}`}
             >
-              <div className="w-8 h-8 rounded-full bg-soft-pink border border-line flex items-center justify-center text-accent font-mono text-xs font-bold">
-                0{i + 1}
-              </div>
-              <h3 className="font-display text-xl font-bold text-ink">{v.title}</h3>
-              <p className="font-sans text-sm text-muted leading-relaxed">{v.description}</p>
-            </div>
+              <span className="font-mono text-sm font-semibold text-orange-600">0{i + 1}</span>
+              <h3 className="type-h3 mt-3 text-ink">{v.title}</h3>
+              <p className="mt-3 leading-relaxed text-muted">{v.description}</p>
+            </li>
           ))}
-        </div>
-      </div>
+        </ol>
+      </section>
 
-      {/* Timeline of Experience */}
-      <div className="space-y-8">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-wider text-accent font-bold block mb-1">
-            // MILESTONES
-          </span>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-ink">
-            Experience &amp; <span className="font-serif italic font-normal text-accent">Education</span>.
-          </h2>
-        </div>
-
-        <div className="space-y-6">
-          {SITE_CONFIG.journey.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-6 sm:p-8 rounded-card bg-surface border border-line shadow-soft space-y-3"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <span className="font-mono text-xs text-accent font-bold">{item.period}</span>
-                <span className="font-mono text-xs text-muted">{item.location}</span>
-              </div>
-              <h3 className="font-display text-xl sm:text-2xl font-bold text-ink">
-                {item.role} <span className="text-muted font-normal">at</span> {item.company}
-              </h3>
-              <p className="font-sans text-sm text-muted leading-relaxed">
-                {item.description}
+      <section aria-labelledby="journey-title">
+        <p className="eyebrow mb-3 text-orange-600">Experience</p>
+        <h2 id="journey-title" className="type-h2 mb-10 text-ink">
+          Where I’ve <span className="accent-word text-indigo-600">learned.</span>
+        </h2>
+        <ol className="border-l-2 border-line">
+          {SITE_CONFIG.journey.map((item) => (
+            <li key={item.role} className="relative pb-10 pl-8 last:pb-0">
+              <span
+                className="absolute -left-[7px] top-1.5 h-3 w-3 rounded-full border-2 border-bg bg-orange-500"
+                aria-hidden="true"
+              />
+              <p className="font-mono text-xs text-muted">
+                {item.period} · {item.location}
               </p>
-              <div className="pt-2 flex flex-wrap gap-2">
-                {item.highlights.map((h, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 rounded-pill bg-bg border border-line text-[11px] font-mono text-ink"
+              <h3 className="mt-1 font-display text-xl font-bold text-ink">
+                {item.role} <span className="font-normal text-muted">— {item.company}</span>
+              </h3>
+              <p className="mt-2 max-w-2xl leading-relaxed text-muted">{item.description}</p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {item.highlights.map((h) => (
+                  <li
+                    key={h}
+                    className="rounded-pill border border-line bg-surface px-3 py-1 font-mono text-xs text-ink"
                   >
-                    ✦ {h}
-                  </span>
+                    {h}
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            </li>
           ))}
-        </div>
-      </div>
+        </ol>
+      </section>
 
-      {/* Tool Stack Complete Grid */}
-      <div className="space-y-8">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-wider text-accent font-bold block mb-1">
-            // ARSENAL
-          </span>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-ink">
-            Tools &amp; <span className="font-serif italic font-normal text-accent-2">Technologies</span>.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <section aria-labelledby="tools-title">
+        <p className="eyebrow mb-3 text-orange-600">Toolkit</p>
+        <h2 id="tools-title" className="type-h2 mb-10 text-ink">
+          What I <span className="accent-word text-orange-600">reach</span> for.
+        </h2>
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {SITE_CONFIG.tools.map((t) => (
-            <div
-              key={t.name}
-              className="p-5 rounded-2xl bg-surface border border-line shadow-soft hover:border-accent transition-colors flex flex-col justify-between"
-            >
-              <span className="font-mono text-[10px] text-muted uppercase tracking-wider">
-                {t.category}
-              </span>
-              <span className="font-display text-base font-bold text-ink mt-2">
-                {t.name}
-              </span>
-            </div>
+            <li key={t.name} className="rounded-2xl border border-line bg-surface p-5">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-muted">{t.category}</p>
+              <p className="mt-2 font-display font-bold text-ink">{t.name}</p>
+            </li>
           ))}
-        </div>
-      </div>
-
+        </ul>
+      </section>
     </div>
   );
 }
