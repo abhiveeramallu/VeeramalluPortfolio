@@ -1,130 +1,106 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { spring } from '@/lib/motion';
 
-export const CustomCursor: React.FC = () => {
-  const [cursorType, setCursorType] = useState<'default' | 'pointer' | 'click' | 'text'>('default');
-  const [cursorLabel, setCursorLabel] = useState<string>('');
-  const [isTouch, setIsTouch] = useState(true);
+type CursorState = 'default' | 'link' | 'label' | 'drag' | 'text';
 
-  const mouseX = useMotionValue(-100);
-  const mouseY = useMotionValue(-100);
+const LINK_SELECTOR = 'a, button, [role="button"], summary, label, select';
+const TEXT_SELECTOR =
+  'input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable="true"], [data-cursor="text"]';
 
-  const springConfig = { damping: 25, stiffness: 350, mass: 0.4 };
-  const cursorX = useSpring(mouseX, springConfig);
-  const cursorY = useSpring(mouseY, springConfig);
+/**
+ * Follower cursor with five states. The native cursor stays visible (accessibility + precision);
+ * this layer adds intent: "View" on cards, "Drag" on sliders, an I-beam on fields.
+ */
+export function CustomCursor() {
+  const [enabled, setEnabled] = useState(false);
+  const [state, setState] = useState<CursorState>('default');
+  const [label, setLabel] = useState('');
+  const [pressed, setPressed] = useState(false);
+  const x = useMotionValue(-100);
+  const y = useMotionValue(-100);
+  const sx = useSpring(x, spring.soft);
+  const sy = useSpring(y, spring.soft);
 
   useEffect(() => {
-    // Hide completely on touch devices
-    if (window.matchMedia('(pointer: coarse)').matches) {
-      setIsTouch(true);
-      return;
-    }
-    setIsTouch(false);
+    const fine = window.matchMedia('(pointer: fine)').matches;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!fine || reduced) return;
+    setEnabled(true);
 
-    const onMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
+    const move = (e: PointerEvent) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
     };
-
-    const onMouseDown = () => {
-      setCursorType('click');
-    };
-
-    const onMouseUp = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target?.closest('a, button, [role="button"], input, select, textarea')) {
-        setCursorType('pointer');
-      } else {
-        setCursorType('default');
-      }
-    };
-
-    const onMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-
-      const customLabel = target.closest('[data-cursor-label]')?.getAttribute('data-cursor-label');
-      if (customLabel) {
-        setCursorLabel(customLabel);
-        setCursorType('pointer');
+    const over = (e: PointerEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (!el) return;
+      const drag = el.closest('[data-cursor="drag"]');
+      if (drag) {
+        setState('drag');
         return;
       }
-      setCursorLabel('');
-
-      if (target.closest('a, button, [role="button"], input, select, textarea, [data-cursor="pointer"]')) {
-        setCursorType('pointer');
-      } else {
-        setCursorType('default');
+      const labelled = el.closest('[data-cursor-label]');
+      if (labelled) {
+        setLabel(labelled.getAttribute('data-cursor-label') ?? '');
+        setState('label');
+        return;
       }
+      if (el.closest(TEXT_SELECTOR)) setState('text');
+      else if (el.closest(LINK_SELECTOR)) setState('link');
+      else setState('default');
+    };
+    const down = () => setPressed(true);
+    const up = () => setPressed(false);
+    const leave = () => {
+      x.set(-100);
+      y.set(-100);
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('mouseover', onMouseOver);
-
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerover', over, { passive: true });
+    window.addEventListener('pointerdown', down);
+    window.addEventListener('pointerup', up);
+    document.documentElement.addEventListener('pointerleave', leave);
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mouseup', onMouseUp);
-      window.removeEventListener('mouseover', onMouseOver);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerover', over);
+      window.removeEventListener('pointerdown', down);
+      window.removeEventListener('pointerup', up);
+      document.documentElement.removeEventListener('pointerleave', leave);
     };
-  }, [mouseX, mouseY]);
+  }, [x, y]);
 
-  if (isTouch) return null;
+  if (!enabled) return null;
+
+  const pill = state === 'label' || state === 'drag';
 
   return (
     <motion.div
       aria-hidden="true"
-      className="fixed top-0 left-0 pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-      style={{
-        x: cursorX,
-        y: cursorY,
-      }}
+      className="no-print pointer-events-none fixed left-0 top-0 z-[9999]"
+      style={{ x: sx, y: sy }}
     >
-      {cursorLabel ? (
-        // Custom interactive label pill (e.g. "View project", "Play")
-        <motion.div
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.6, opacity: 0 }}
-          className="px-3.5 py-1.5 rounded-full bg-accent text-white font-mono text-[11px] font-bold tracking-wider shadow-bloom whitespace-nowrap flex items-center space-x-1"
-        >
-          <span>{cursorLabel}</span>
-          <span className="text-accent-3">↗</span>
-        </motion.div>
-      ) : cursorType === 'pointer' ? (
-        // Playful-premium pointer SVG
-        <motion.div
-          animate={{ scale: 1.15 }}
-          transition={{ type: 'spring', damping: 20, stiffness: 350 }}
-          className="relative text-accent filter drop-shadow-md"
-        >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M8.5 2V13.5L5.7 12.3C4.8 11.9 3.7 12.2 3.2 13.1C2.8 13.9 3 15 3.8 15.5L8.2 18.7C9.2 19.4 10.4 19.8 11.6 19.8H16.5C18.7 19.8 20.5 18 20.5 15.8V9.5C20.5 8.7 19.8 8 19 8C18.2 8 17.5 8.7 17.5 9.5V8.5C17.5 7.7 16.8 7 16 7C15.2 7 14.5 7.7 14.5 8.5V7.5C14.5 6.7 13.8 6 13 6C12.2 6 11.5 6.7 11.5 7.5V2C11.5 1.2 10.8 0.5 10 0.5C9.2 0.5 8.5 1.2 8.5 2Z"
-              fill="#FF5A1F"
-              stroke="#FFFFFF"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </motion.div>
-      ) : cursorType === 'click' ? (
-        // Tactile Press Click Ripple
-        <motion.div
-          animate={{ scale: 0.8 }}
-          className="w-5 h-5 rounded-full bg-accent border-2 border-white shadow-bloom"
-        />
-      ) : (
-        // Default warm accent dot
-        <motion.div
-          animate={{ scale: 1 }}
-          className="w-3.5 h-3.5 rounded-full bg-accent border-[1.5px] border-white shadow-sm"
-        />
-      )}
+      <motion.div
+        className="flex -translate-x-1/2 -translate-y-1/2 items-center justify-center whitespace-nowrap font-mono text-[11px] font-semibold uppercase tracking-wider text-[#111]"
+        animate={{
+          width: pill ? 'auto' : state === 'link' ? 40 : state === 'text' ? 3 : 12,
+          height: pill ? 32 : state === 'link' ? 40 : state === 'text' ? 26 : 12,
+          borderRadius: state === 'text' ? 2 : 999,
+          backgroundColor: state === 'link' ? 'rgba(255,90,31,0)' : state === 'text' ? '#5B5BFF' : '#FF5A1F',
+          borderWidth: state === 'link' ? 1.5 : 0,
+          paddingLeft: pill ? 14 : 0,
+          paddingRight: pill ? 14 : 0,
+          scale: pressed ? 0.85 : 1,
+        }}
+        style={{ borderColor: '#FF5A1F', borderStyle: 'solid' }}
+        transition={spring.snappy}
+      >
+        {state === 'label' && <span>{label}</span>}
+        {state === 'drag' && <span>← Drag →</span>}
+      </motion.div>
     </motion.div>
   );
-};
+}
