@@ -1,144 +1,75 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Copy, Check, Clock, Heart, Sparkles } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { SITE_CONFIG } from '@/data/content';
+import { LocalTime } from './LocalTime';
+import { NAV_LINKS } from '@/lib/nav';
 
-export const Footer: React.FC = () => {
-  const [localTime, setLocalTime] = useState<string>('');
-  const [copied, setCopied] = useState<boolean>(false);
+const SOCIAL_LABELS: Record<string, string> = { linkedin: 'LinkedIn', github: 'GitHub', behance: 'Behance' };
 
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      // Display local time in India Standard Time
-      const timeStr = now.toLocaleTimeString('en-US', {
-        timeZone: 'Asia/Kolkata',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-      setLocalTime(timeStr);
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const copyEmail = () => {
-    navigator.clipboard.writeText(SITE_CONFIG.email);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2400);
-  };
-
+export function Footer() {
   return (
-    <footer className="relative bg-surface border-t border-line py-16 sm:py-20 px-6 sm:px-12 mt-24">
-      <div className="max-w-6xl mx-auto flex flex-col space-y-12">
-        {/* Top Big Callout */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-12 border-b border-line gap-6">
-          <div>
-            <span className="font-mono text-xs uppercase tracking-wider text-muted block mb-2">
-              Ready to create something memorable?
-            </span>
-            <h3 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-ink">
-              Let's craft the <span className="font-serif italic font-normal text-accent">obvious</span> together.
-            </h3>
-          </div>
-
-          <button
-            onClick={copyEmail}
-            data-cursor-label="COPY"
-            className="group flex items-center space-x-2.5 px-5 py-3 rounded-pill bg-bg border border-line hover:border-accent text-ink font-mono text-xs sm:text-sm font-semibold transition-all hover:bg-surface shadow-soft"
-          >
-            <span>{SITE_CONFIG.email}</span>
-            {copied ? (
-              <Check className="w-4 h-4 text-accent-2" />
-            ) : (
-              <Copy className="w-4 h-4 text-muted group-hover:text-accent transition-colors" />
-            )}
-            {copied && <span className="text-[11px] text-accent font-bold">Copied!</span>}
-          </button>
+    <footer className="relative border-t border-line bg-surface px-6 py-14 sm:px-12">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 font-mono text-xs md:grid-cols-4">
+        <div>
+          <h2 className="mb-3 uppercase tracking-wider text-muted">Based in</h2>
+          <p className="font-semibold text-ink">{SITE_CONFIG.location}</p>
+          <p className="mt-1 text-muted">
+            <LocalTime /> IST
+          </p>
         </div>
-
-        {/* Middle Metadata & Socials Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-xs font-mono">
-          <div>
-            <div className="text-muted uppercase tracking-wider mb-2">// LOCATION</div>
-            <div className="text-ink font-semibold">{SITE_CONFIG.location}</div>
-            <div className="text-muted mt-1 flex items-center space-x-1.5">
-              <Clock className="w-3.5 h-3.5 text-accent" />
-              <span>{localTime || '12:00:00 PM'} IST</span>
-            </div>
-          </div>
-
-          <div>
-            <div className="text-muted uppercase tracking-wider mb-2">// AVAILABILITY</div>
-            <div className="flex items-center space-x-2 text-ink font-semibold">
-              <span className="w-2 h-2 rounded-full bg-accent-3 border border-ink animate-pulse" />
-              <span>{SITE_CONFIG.status}</span>
-            </div>
-            <div className="text-muted mt-1">{SITE_CONFIG.availability} onwards</div>
-          </div>
-
-          <div>
-            <div className="text-muted uppercase tracking-wider mb-2">// NAVIGATION</div>
-            <div className="flex flex-col space-y-1 text-muted">
-              <Link href="/about" className="hover:text-accent transition-colors">Journey</Link>
-              <Link href="/work" className="hover:text-accent transition-colors">Projects</Link>
-              <Link href="/playground" className="hover:text-accent transition-colors">Playground</Link>
-              <Link href="/contact" className="hover:text-accent transition-colors">Contact Form</Link>
-            </div>
-          </div>
-
-          <div>
-            <div className="text-muted uppercase tracking-wider mb-2">// CONNECT</div>
-            <div className="flex flex-col space-y-1 text-muted">
-              <a
-                href={SITE_CONFIG.socials.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 hover:text-accent transition-colors"
-              >
-                <span>LinkedIn</span>
-                <ArrowUpRight className="w-3 h-3 text-muted" />
-              </a>
-              <a
-                href={SITE_CONFIG.socials.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 hover:text-accent transition-colors"
-              >
-                <span>GitHub</span>
-                <ArrowUpRight className="w-3 h-3 text-muted" />
-              </a>
-              <a
-                href={SITE_CONFIG.socials.behance}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 hover:text-accent transition-colors"
-              >
-                <span>Behance</span>
-                <ArrowUpRight className="w-3 h-3 text-muted" />
-              </a>
-            </div>
-          </div>
+        <div>
+          <h2 className="mb-3 uppercase tracking-wider text-muted">Status</h2>
+          <p className="flex items-center gap-2 font-semibold text-ink">
+            <span className="relative h-2 w-2 rounded-full bg-lime-600" aria-hidden="true" />
+            {SITE_CONFIG.status}
+          </p>
+          <p className="mt-1 text-muted">{SITE_CONFIG.availability}</p>
         </div>
-
-        {/* Bottom Micro Copyright */}
-        <div className="pt-8 border-t border-line/60 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-muted gap-4">
-          <div>
-            © {new Date().getFullYear()} {SITE_CONFIG.name} — Built with Next.js, R3F &amp; Lenis.
-          </div>
-          <div className="flex items-center space-x-2">
-            <span>Playful-premium design language</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-            <span className="text-ink font-medium">Light theme only</span>
-          </div>
+        <nav aria-label="Footer">
+          <h2 className="mb-3 uppercase tracking-wider text-muted">Pages</h2>
+          <ul className="space-y-0.5">
+            {NAV_LINKS.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="inline-block py-1 text-ink underline-offset-4 hover:underline">
+                  {l.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <a href="/resume.pdf" className="inline-block py-1 text-ink underline-offset-4 hover:underline">
+                Résumé (PDF)
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <div>
+          <h2 className="mb-3 uppercase tracking-wider text-muted">Elsewhere</h2>
+          <ul className="space-y-0.5">
+            {Object.entries(SITE_CONFIG.socials).map(([key, href]) => (
+              <li key={key}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 py-1 text-ink underline-offset-4 hover:underline"
+                >
+                  {SOCIAL_LABELS[key] ?? key}
+                  <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                  <span className="sr-only">(opens in a new tab)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
+      </div>
+      <div className="mx-auto mt-12 flex max-w-6xl flex-col items-start justify-between gap-3 border-t border-line pt-6 font-mono text-[11px] text-muted sm:flex-row sm:items-center">
+        <p>
+          © {new Date().getFullYear()} {SITE_CONFIG.name}. Designed and built by me in Next.js, R3F and GLSL.
+        </p>
+        <p>
+          Press <kbd className="rounded border border-line bg-bg px-1.5 py-0.5 text-ink">?</kbd> for shortcuts
+        </p>
       </div>
     </footer>
   );
-};
+}

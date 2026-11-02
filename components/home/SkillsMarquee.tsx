@@ -1,40 +1,32 @@
-'use client';
-
-import React from 'react';
 import { SITE_CONFIG } from '@/data/content';
 
-export const SkillsMarquee: React.FC = () => {
+export function SkillsMarquee() {
+  const rows = [
+    { items: SITE_CONFIG.skillsRow1, anim: 'animate-marquee-left', dot: 'bg-orange-500' },
+    { items: SITE_CONFIG.skillsRow2, anim: 'animate-marquee-right', dot: 'bg-indigo-500' },
+  ];
   return (
-    <section className="relative py-12 overflow-hidden border-y border-line bg-surface/50">
-      <div className="flex flex-col space-y-3.5 marquee-container">
-        
-        {/* Row 1: Scrolling Left */}
-        <div className="flex whitespace-nowrap animate-marquee-left marquee-track">
-          {[...SITE_CONFIG.skillsRow1, ...SITE_CONFIG.skillsRow1, ...SITE_CONFIG.skillsRow1].map((skill, idx) => (
-            <div
-              key={idx}
-              className="group mx-2 px-5 py-2.5 rounded-pill bg-bg border border-line hover:border-ink hover:bg-accent-3 text-ink font-mono text-xs sm:text-sm font-semibold tracking-wide transition-colors cursor-default shadow-sm select-none flex items-center space-x-2"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-accent group-hover:bg-ink transition-colors" />
-              <span>{skill}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Row 2: Scrolling Right */}
-        <div className="flex whitespace-nowrap animate-marquee-right marquee-track">
-          {[...SITE_CONFIG.skillsRow2, ...SITE_CONFIG.skillsRow2, ...SITE_CONFIG.skillsRow2].map((skill, idx) => (
-            <div
-              key={idx}
-              className="group mx-2 px-5 py-2.5 rounded-pill bg-surface border border-line hover:border-ink hover:bg-accent-3 text-ink font-mono text-xs sm:text-sm font-semibold tracking-wide transition-colors cursor-default shadow-sm select-none flex items-center space-x-2"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-accent-2 group-hover:bg-ink transition-colors" />
-              <span>{skill}</span>
-            </div>
-          ))}
-        </div>
-
+    <section aria-label="Skills" className="marquee-container overflow-hidden py-12">
+      <ul className="sr-only">
+        {[...SITE_CONFIG.skillsRow1, ...SITE_CONFIG.skillsRow2].map((s) => (
+          <li key={s}>{s}</li>
+        ))}
+      </ul>
+      <div aria-hidden="true" className="flex flex-col gap-3">
+        {rows.map((row, r) => (
+          <div key={r} className={`marquee-track flex w-max ${row.anim}`}>
+            {[...row.items, ...row.items].map((skill, i) => (
+              <span
+                key={i}
+                className="mx-1.5 flex items-center gap-2 rounded-pill border border-line bg-surface px-5 py-2.5 font-mono text-sm font-medium text-ink"
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${row.dot}`} />
+                {skill}
+              </span>
+            ))}
+          </div>
+        ))}
       </div>
     </section>
   );
-};
+}

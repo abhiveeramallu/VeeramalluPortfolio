@@ -2,92 +2,316 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens. Tonal scales were generated in OKLCH around the brand hues
+ * (500 = brand value). Text-safe pairings are documented in docs/DECISIONS.md and
+ * enforced by tests/unit/contrast.test.ts.
+ */
 :root {
-  --bg: #F6F4EF;
-  --surface: #FFFFFF;
+  --bg: #f6f4ef;
+  --surface: #ffffff;
   --ink: #111111;
-  --muted: #6B6B66;
-  --line: #E4E0D8;
-  --accent: #FF5A1F;
-  --accent-2: #5B5BFF;
-  --accent-3: #C6F432;
-  --soft-pink: #FFD6E8;
-  --soft-blue: #D6E6FF;
+  --muted: #6b6b66;
+  --line: #e4e0d8;
 
-  /* Lenis smooth scroll */
-  --lenis-scroll-behavior: smooth;
+  --orange-50: #fff4f1;
+  --orange-100: #ffe7df;
+  --orange-200: #ffcebf;
+  --orange-300: #ffad94;
+  --orange-400: #ff815b;
+  --orange-500: #ff5a1f;
+  --orange-600: #bd3d0c;
+  --orange-700: #942c03;
+  --orange-800: #6c1f04;
+  --orange-900: #471202;
+
+  --indigo-50: #f4f6ff;
+  --indigo-100: #e8ecff;
+  --indigo-200: #d1d9fe;
+  --indigo-300: #b4c0fe;
+  --indigo-400: #94a2ff;
+  --indigo-500: #5b5bff;
+  --indigo-600: #5353ed;
+  --indigo-700: #3f3bc1;
+  --indigo-800: #2c2891;
+  --indigo-900: #1b1664;
+
+  --lime-50: #fafee9;
+  --lime-100: #f3fdcf;
+  --lime-200: #e8fb9f;
+  --lime-300: #dbf86e;
+  --lime-400: #d0f64c;
+  --lime-500: #c6f432;
+  --lime-600: #8fb30a;
+  --lime-700: #617a03;
+  --lime-800: #4b5e08;
+  --lime-900: #354401;
+
+  --accent: var(--orange-500);
+  --accent-2: var(--indigo-500);
+  --accent-3: var(--lime-500);
+
+  --soft-pink: #ffd6e8;
+  --soft-blue: #d6e6ff;
+  --soft-yellow: #fff0c2;
+  --soft-green: #e4f4d6;
+  --soft-purple: #e9e4ff;
+
+  /* Fluid type scale: min @ 375px → max @ 1440px */
+  --step--1: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --step-1: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem);
+  --step-2: clamp(1.5rem, 1.32rem + 0.75vw, 2rem);
+  --step-3: clamp(2rem, 1.69rem + 1.31vw, 2.875rem);
+  --step-4: clamp(2.5rem, 1.97rem + 2.25vw, 4rem);
+  --step-5: clamp(2.75rem, 1.95rem + 3.4vw, 5rem);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Opt-in dark theme (command palette → "Toggle dark theme"). Text-safe steps are remapped lighter. */
+html[data-theme='dark'] {
+  --bg: #111111;
+  --surface: #1b1b1a;
+  --ink: #f6f4ef;
+  --muted: #a3a39c;
+  --line: #2e2e2b;
+  --orange-600: #ff815b;
+  --orange-700: #ffad94;
+  --indigo-600: #94a2ff;
+  --indigo-700: #b4c0fe;
+  --lime-700: #c6f432;
+  --soft-pink: #3a2430;
+  --soft-blue: #1f2a3d;
+  --soft-yellow: #3a321c;
+  --soft-green: #25311d;
+  --soft-purple: #29253f;
+  color-scheme: dark;
 }
 
 html {
   background-color: var(--bg);
   color: var(--ink);
-  scroll-behavior: smooth;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Lenis owns smooth scrolling; native smooth would double-animate. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 body {
   background-color: var(--bg);
   color: var(--ink);
-  overflow-x: hidden;
+  overflow-x: clip;
   min-height: 100vh;
-  position: relative;
-  selection-background-color: var(--accent);
-  selection-color: #ffffff;
 }
 
 ::selection {
-  background: #FF5A1F;
-  color: #ffffff;
+  background: var(--orange-500);
+  color: var(--ink);
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--line);
-  border-radius: 9999px;
-  border: 2px solid var(--bg);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+/* Anchor targets clear the floating navbar. */
+[id] {
+  scroll-margin-top: 6rem;
 }
 
-/* Subtle tactile grain overlay */
+@layer components {
+  /* Headline sizes. Every headline carries exactly one `.accent-word`. */
+  .type-display {
+    font-family: var(--font-display);
+    font-size: var(--step-5);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+  }
+  .type-h1 {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+  }
+  .type-h2 {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+  .type-h3 {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  .accent-word {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Dark "inverted" section variant used for rhythm (Process, Contact). */
+  .section-inverted {
+    --bg: #111111;
+    --surface: #1b1b1a;
+    --ink: #f6f4ef;
+    --muted: #a3a39c;
+    --line: #2e2e2b;
+    background-color: #111111;
+    color: #f6f4ef;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5 font-mono text-sm font-semibold tracking-wide transition-[background-color,color,box-shadow,border-color] duration-300;
+  }
+  .btn-primary {
+    @apply btn bg-orange-500 text-[#111] shadow-bloom hover:bg-[#111] hover:text-[#f6f4ef] hover:shadow-none;
+  }
+  .btn-secondary {
+    @apply btn border border-line bg-surface text-ink shadow-soft hover:border-ink;
+  }
+  .btn-ghost-inverted {
+    @apply btn border border-[#3a3a36] text-[#f6f4ef] hover:border-[#f6f4ef];
+  }
+}
+
+/* Tactile grain */
 .grain-overlay {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
   pointer-events: none;
 }
 
-/* Card hover lift with bloom shadow */
-.card-hover-lift {
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease;
-}
-.card-hover-lift:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 40px -8px rgba(17, 17, 17, 0.08), 0 8px 16px -4px rgba(17, 17, 17, 0.04);
-}
-
-/* Marquee pause on hover */
-.marquee-container:hover .marquee-track {
+.marquee-container:hover .marquee-track,
+.marquee-container:focus-within .marquee-track {
   animation-play-state: paused;
 }
 
-/* Accessibility focus visible */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--indigo-500);
   outline-offset: 3px;
+  border-radius: 4px;
+}
+.section-inverted :focus-visible {
+  outline-color: var(--lime-500);
 }
 
-/* Reduced motion support */
+/* ---------- Preloader (first visit per session; see components/ui/Preloader.tsx) ---------- */
+.preloader {
+  display: none;
+}
+html[data-preload] .preloader {
+  display: flex;
+  animation: preloader-out 0.45s var(--ease-in-out) 0.75s forwards;
+}
+html[data-preload] .preloader-bar {
+  animation: preloader-bar 0.75s var(--ease-out) forwards;
+}
+@keyframes preloader-out {
+  to {
+    transform: translateY(-100%);
+    visibility: hidden;
+  }
+}
+@keyframes preloader-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Hero entrance — CSS so it starts at first paint (no hydration wait for LCP). */
+.hero-in {
+  animation: hero-in 0.8s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+html[data-preload] .hero-in {
+  animation-delay: calc(1.05s + var(--i, 0) * 80ms);
+}
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+/* The H1 never starts invisible: it slides only, so it can be the LCP at first paint. */
+.hero-line {
+  display: block;
+  animation: hero-line 0.9s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+html[data-preload] .hero-line {
+  animation-delay: calc(1s + var(--i, 0) * 70ms);
+}
+@keyframes hero-line {
+  from {
+    transform: translateY(0.35em);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: inherit;
+  animation: pulse-ring 1.8s var(--ease-out) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  html[data-preload] .preloader {
+    display: none;
+  }
+}
+
+@media print {
+  .no-print,
+  header,
+  footer,
+  .grain-overlay {
+    display: none !important;
+  }
+  body {
+    background: #fff;
   }
 }

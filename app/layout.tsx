@@ -1,119 +1,76 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { SITE_CONFIG } from '@/data/content';
+import { fontVariables } from '@/lib/fonts';
+import { SITE_URL } from '@/lib/site';
+import { personJsonLd, websiteJsonLd } from '@/lib/seo';
 import { SmoothScroll } from '@/components/ui/SmoothScroll';
 import { CustomCursor } from '@/components/ui/CustomCursor';
 import { Navbar } from '@/components/ui/Navbar';
 import { Footer } from '@/components/ui/Footer';
-import { AskMeChat } from '@/components/ui/AskMeChat';
 import { GrainOverlay } from '@/components/ui/GrainOverlay';
+import { HirePill } from '@/components/ui/HirePill';
+import { Preloader } from '@/components/ui/Preloader';
+import { ScrollProgress } from '@/components/ui/ScrollProgress';
+import { ClientIslands } from '@/components/ui/ClientIslands';
+import { JsonLd } from '@/components/ui/JsonLd';
+import { PRELOADER_SCRIPT, THEME_SCRIPT } from '@/lib/head-scripts';
+
+const title = `${SITE_CONFIG.name} — ${SITE_CONFIG.role}`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://abhiram.design'),
-  title: {
-    default: `${SITE_CONFIG.name} — ${SITE_CONFIG.role}`,
-    template: `%s | ${SITE_CONFIG.name}`,
-  },
-  description: `${SITE_CONFIG.name} is a ${SITE_CONFIG.role} based in ${SITE_CONFIG.location}. ${SITE_CONFIG.tagline}`,
-  keywords: [
-    SITE_CONFIG.name,
-    SITE_CONFIG.role,
-    'Design Engineer',
-    'Product Designer',
-    'Design Systems',
-    'Creative Developer',
-    'Three.js',
-    'React',
-    'Next.js',
-  ],
-  authors: [{ name: SITE_CONFIG.name, url: 'https://abhiram.design' }],
+  metadataBase: new URL(SITE_URL),
+  title: { default: title, template: `%s · ${SITE_CONFIG.name}` },
+  description: `${SITE_CONFIG.tagline} ${SITE_CONFIG.role} in ${SITE_CONFIG.location}. ${SITE_CONFIG.status}.`,
+  applicationName: SITE_CONFIG.brandName,
+  authors: [{ name: SITE_CONFIG.name, url: SITE_URL }],
   creator: SITE_CONFIG.name,
+  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://abhiram.design',
-    title: `${SITE_CONFIG.name} — ${SITE_CONFIG.role}`,
+    url: '/',
+    title,
     description: SITE_CONFIG.tagline,
-    siteName: SITE_CONFIG.name,
+    siteName: SITE_CONFIG.brandName,
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: `${SITE_CONFIG.name} — ${SITE_CONFIG.role}`,
-    description: SITE_CONFIG.tagline,
-    creator: '@abhiram_design',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  twitter: { card: 'summary_large_image', title, description: SITE_CONFIG.tagline },
+  robots: { index: true, follow: true },
+  formatDetection: { telephone: false },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // JSON-LD Person Schema
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: SITE_CONFIG.name,
-    jobTitle: SITE_CONFIG.role,
-    url: 'https://abhiram.design',
-    sameAs: [
-      SITE_CONFIG.socials.linkedin,
-      SITE_CONFIG.socials.github,
-      SITE_CONFIG.socials.behance,
-      SITE_CONFIG.socials.twitter,
-    ],
-    knowsAbout: [
-      'Product Design',
-      'Design Systems',
-      'User Experience',
-      'Design Engineering',
-      'Creative Technology',
-      'Three.js',
-      'Next.js',
-    ],
-  };
+export const viewport: Viewport = {
+  themeColor: '#F6F4EF',
+  colorScheme: 'light',
+};
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        {/* Decides before first paint whether this session gets the preloader (no flash on repeat visits). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT + PRELOADER_SCRIPT }} />
+        <JsonLd data={[personJsonLd(), websiteJsonLd()]} />
       </head>
-      <body className="font-sans antialiased text-ink bg-bg selection:bg-accent selection:text-white">
-        {/* Grain overlay for tactile texture */}
+      <body className="bg-bg font-sans text-ink antialiased">
+        <a
+          href="#main-content"
+          className="fixed left-4 top-4 z-[10000] -translate-y-24 rounded-pill bg-ink px-5 py-3 font-mono text-sm font-semibold text-bg transition-transform focus:translate-y-0"
+        >
+          Skip to content
+        </a>
+        <Preloader />
         <GrainOverlay />
-
-        {/* Morphing interactive custom cursor */}
+        <ScrollProgress />
         <CustomCursor />
-
-        {/* Lenis Smooth Scroll wrapper */}
-        <SmoothScroll>
-          {/* Floating Pill Navbar */}
-          <Navbar />
-
-          {/* Main Page Content */}
-          <main id="main-content" className="relative z-10 min-h-screen">
-            {children}
-          </main>
-
-          {/* Global Footer */}
-          <Footer />
-
-          {/* Floating "Ask Me" Chat Drawer */}
-          <AskMeChat />
-        </SmoothScroll>
+        <SmoothScroll />
+        <Navbar />
+        <main id="main-content" tabIndex={-1} className="relative z-10 min-h-screen outline-none">
+          {children}
+        </main>
+        <Footer />
+        <HirePill />
+        <ClientIslands />
       </body>
     </html>
   );

@@ -1,105 +1,161 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Target, Layout, Layers, Sparkles, Share2, Rocket } from 'lucide-react';
-import { SITE_CONFIG, ProcessStep } from '@/data/content';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'framer-motion';
+import { SITE_CONFIG } from '@/data/content';
+import { SplitReveal } from '@/components/ui/SplitReveal';
+import { cn } from '@/lib/utils';
 
-const iconMap: Record<string, React.ReactNode> = {
-  Search: <Search className="w-5 h-5" />,
-  Target: <Target className="w-5 h-5" />,
-  Layout: <Layout className="w-5 h-5" />,
-  Layers: <Layers className="w-5 h-5" />,
-  Sparkles: <Sparkles className="w-5 h-5" />,
-  Share2: <Share2 className="w-5 h-5" />,
-  Rocket: <Rocket className="w-5 h-5" />,
-};
+/** Glossy CSS objects that drift at different scroll speeds — 3D feel, zero WebGL cost. */
+function FloatingObject({
+  progress,
+  speed,
+  rotate,
+  className,
+  style,
+}: {
+  progress: MotionValue<number>;
+  speed: number;
+  rotate: number;
+  className: string;
+  style?: React.CSSProperties;
+}) {
+  const y = useTransform(progress, [0, 1], [speed, -speed]);
+  const r = useTransform(progress, [0, 1], [-rotate, rotate]);
+  return (
+    <motion.div
+      aria-hidden="true"
+      style={{ y, rotate: r, ...style }}
+      className={cn('pointer-events-none absolute', className)}
+    />
+  );
+}
 
-export const ProcessSection: React.FC = () => {
-  const [activeStep, setActiveStep] = useState<number>(0);
+const gloss = (c: string) =>
+  `radial-gradient(circle at 32% 28%, #ffffff 0%, ${c} 26%, ${c} 70%, rgba(0,0,0,0.25) 100%)`;
+
+export function ProcessSection() {
+  const ref = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const [active, setActive] = useState(0);
+  const stepRefs = useRef<(HTMLLIElement | null)[]>([]);
+
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.index));
+        });
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    stepRefs.current.forEach((el) => el && io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  const steps = SITE_CONFIG.processSteps;
 
   return (
-    <section id="process" className="py-24 px-6 sm:px-12 max-w-6xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        
-        {/* Left Sticky Header Column */}
-        <div className="lg:col-span-5 lg:sticky lg:top-28 space-y-6 text-left">
-          <div className="text-accent font-mono text-xs font-bold uppercase tracking-wider">
-            // 02. SYSTEMATIC METHODOLOGY
-          </div>
-          <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-ink leading-[1.1]">
-            How I build <span className="font-serif italic font-normal text-accent">better</span> products.
-          </h2>
-          <p className="font-sans text-base text-muted leading-relaxed">
-            Great products don't emerge by accident. They come from rigorous user research, systematic component architecture, and tactile prototype testing in real code.
-          </p>
+    <section
+      ref={ref}
+      id="process"
+      aria-labelledby="process-title"
+      className="section-inverted relative overflow-hidden py-28"
+    >
+      {!reduce && (
+        <>
+          <FloatingObject
+            progress={scrollYProgress}
+            speed={160}
+            rotate={20}
+            className="-left-10 top-24 h-40 w-40 rounded-full"
+            style={{ background: gloss('#FF5A1F') }}
+          />
+          <FloatingObject
+            progress={scrollYProgress}
+            speed={260}
+            rotate={60}
+            className="right-[8%] top-[18%] h-48 w-20 rounded-full"
+            style={{ background: gloss('#5B5BFF') }}
+          />
+          <FloatingObject
+            progress={scrollYProgress}
+            speed={120}
+            rotate={90}
+            className="bottom-24 right-[30%] h-28 w-28 rounded-full border-[18px] border-lime-500"
+            style={{ boxShadow: 'inset 6px 6px 12px rgba(255,255,255,0.5), 0 10px 30px rgba(0,0,0,0.4)' }}
+          />
+          <FloatingObject
+            progress={scrollYProgress}
+            speed={200}
+            rotate={45}
+            className="bottom-10 left-[12%] h-16 w-16 rounded-2xl"
+            style={{ background: gloss('#FFB8D6') }}
+          />
+        </>
+      )}
 
-          {/* Current Step Tracker Pill */}
-          <div className="p-4 rounded-2xl bg-surface border border-line shadow-soft space-y-1 font-mono text-xs">
-            <div className="text-muted uppercase text-[10px] tracking-wider">CURRENT PHASE</div>
-            <div className="flex items-center space-x-2 text-ink font-bold text-sm">
-              <span className="text-accent">{SITE_CONFIG.processSteps[activeStep].number}.</span>
-              <span>{SITE_CONFIG.processSteps[activeStep].title}</span>
-            </div>
-            <p className="font-sans text-muted text-xs">
-              {SITE_CONFIG.processSteps[activeStep].tagline}
+      <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 sm:px-12 lg:grid-cols-12">
+        <div className="lg:sticky lg:top-28 lg:col-span-5 lg:self-start">
+          <p className="eyebrow mb-3 text-orange-500">02 — Process</p>
+          <SplitReveal
+            lines={[
+              <span key="a" id="process-title">
+                How I take an idea
+              </span>,
+              <span key="b">
+                to a <span className="accent-word text-lime-500">shipped</span> product.
+              </span>,
+            ]}
+            className="type-h2 text-ink"
+          />
+          <p className="mt-5 max-w-md leading-relaxed text-muted">
+            Six steps, each with a concrete artifact, so teammates always know where we are and what’s next.
+          </p>
+          <div
+            className="mt-8 hidden rounded-2xl border border-line bg-surface p-5 lg:block"
+            aria-live="polite"
+          >
+            <p className="font-mono text-[11px] uppercase tracking-wider text-muted">Deliverable</p>
+            <p className="mt-1 font-display text-lg font-bold text-ink">
+              <span className="text-orange-500">{steps[active].number}</span> {steps[active].artifact}
             </p>
           </div>
         </div>
 
-        {/* Right Scrolling 7 Steps List */}
-        <div className="lg:col-span-7 space-y-4">
-          {SITE_CONFIG.processSteps.map((step, idx) => {
-            const isActive = activeStep === idx;
-            return (
-              <motion.div
-                key={step.number}
-                onMouseEnter={() => setActiveStep(idx)}
-                className={`p-6 sm:p-8 rounded-card border transition-all duration-300 text-left ${
-                  isActive
-                    ? 'bg-surface border-accent shadow-card scale-[1.01]'
-                    : 'bg-surface/70 border-line hover:border-line/90'
-                }`}
+        <ol className="lg:col-span-7">
+          {steps.map((step, i) => (
+            <li
+              key={step.number}
+              ref={(el) => {
+                stepRefs.current[i] = el;
+              }}
+              data-index={i}
+              className={cn(
+                // Active state via accent rule + number colour, never opacity (dimmed text would fail contrast).
+                'relative grid grid-cols-[3.5rem_1fr] gap-4 border-t border-line py-8 last:border-b',
+                "before:absolute before:-top-px before:left-0 before:h-0.5 before:bg-orange-500 before:transition-[width] before:duration-500 before:content-['']",
+                active === i ? 'before:w-full' : 'before:w-0',
+              )}
+            >
+              <span
+                className={cn(
+                  'font-mono text-sm font-semibold',
+                  active === i ? 'text-orange-500' : 'text-muted',
+                )}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3.5">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${
-                        isActive
-                          ? 'bg-accent text-white border-accent shadow-bloom'
-                          : 'bg-bg text-muted border-line'
-                      }`}
-                    >
-                      {iconMap[step.icon]}
-                    </div>
-                    <div>
-                      <span className="font-mono text-xs text-accent font-bold tracking-wider">
-                        STEP {step.number}
-                      </span>
-                      <h3 className="font-display text-xl sm:text-2xl font-bold text-ink">
-                        {step.title}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <span className="font-serif italic text-muted text-lg hidden sm:inline">
-                    {step.title}
-                  </span>
-                </div>
-
-                <div className="font-mono text-xs font-semibold text-accent-2 mb-2">
-                  {step.tagline}
-                </div>
-
-                <p className="font-sans text-sm text-muted leading-relaxed">
-                  {step.description}
-                </p>
-              </motion.div>
-            );
-          })}
-        </div>
-
+                {step.number}
+              </span>
+              <div>
+                <h3 className="type-h3 text-ink">{step.title}</h3>
+                <p className="mt-1 font-mono text-xs text-lime-500">{step.tagline}</p>
+                <p className="mt-3 max-w-lg leading-relaxed text-muted">{step.description}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
-};
+}

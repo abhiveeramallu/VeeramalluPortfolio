@@ -1,10 +1,5 @@
-import React from 'react';
-
-export const GrainOverlay: React.FC = () => {
+export function GrainOverlay() {
   return (
-    <div
-      aria-hidden="true"
-      className="fixed inset-0 z-40 pointer-events-none grain-overlay opacity-30 mix-blend-multiply"
-    />
+    <div aria-hidden="true" className="grain-overlay fixed inset-0 z-40 opacity-30 mix-blend-multiply" />
   );
-};
+}
