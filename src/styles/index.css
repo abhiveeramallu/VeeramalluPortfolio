@@ -25,6 +25,12 @@ html {
   background: #FF5B35;
 }
 
+/* Focus outline accessibility */
+:focus-visible {
+  outline: 2px solid #FF5B35;
+  outline-offset: 2px;
+}
+
 /* Custom glow utility classes */
 .glow-orange {
   box-shadow: 0 0 35px -5px rgba(255, 91, 53, 0.4);
@@ -88,3 +94,53 @@ html {
   animation-play-state: paused;
 }
 
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print Stylesheet for clean Resume exporting */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  header, footer, main, [data-cursor], .no-print {
+    display: none !important;
+  }
+
+  #printable-resume {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  #printable-resume * {
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #printable-resume h1,
+  #printable-resume h2,
+  #printable-resume h3,
+  #printable-resume strong {
+    color: #000000 !important;
+  }
+}

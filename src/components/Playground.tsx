@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Terminal as TerminalIcon, Sparkles, Box, Gamepad2, Play, RefreshCw, Send, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { InteractiveLab3D } from '../scenes/InteractiveLab3D';
+import { WebGLBoundary } from './WebGLBoundary';
 import { soundManager } from '../utils/audio';
 
 type PlaygroundTab = 'terminal' | 'ai' | 'lab3d' | 'game';
@@ -363,16 +364,18 @@ const Lab3DExperiment: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center h-full">
       {/* 3D Canvas Viewport */}
       <div className="lg:col-span-7 h-[340px] sm:h-[380px] rounded-2xl border border-[#272733] bg-[#0c0c11] overflow-hidden relative">
-        <Canvas camera={{ position: [0, 0, 4.2], fov: 45 }}>
-          <Suspense fallback={null}>
-            <InteractiveLab3D
-              geometryType={geometry}
-              wireframe={wireframe}
-              speed={speed}
-              color={color}
-            />
-          </Suspense>
-        </Canvas>
+        <WebGLBoundary fallbackTitle="3D Shader Laboratory">
+          <Canvas camera={{ position: [0, 0, 4.2], fov: 45 }} dpr={[1, 1.75]}>
+            <Suspense fallback={null}>
+              <InteractiveLab3D
+                geometryType={geometry}
+                wireframe={wireframe}
+                speed={speed}
+                color={color}
+              />
+            </Suspense>
+          </Canvas>
+        </WebGLBoundary>
         <div className="absolute bottom-3 left-3 text-[10px] font-mono text-[#A7A3AD] bg-[#101014]/80 px-2.5 py-1 rounded border border-[#272733]">
           WEBGL REALTIME SHADER
         </div>

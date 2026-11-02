@@ -1,11 +1,13 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { ArrowUpRight, Github, ExternalLink, Cpu, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Github, ExternalLink, Sparkles } from 'lucide-react';
 import { Project } from '../types';
 import { RouteFusionScene } from '../scenes/RouteFusionScene';
 import { ThreatLensScene } from '../scenes/ThreatLensScene';
 import { SmartDocumentScene } from '../scenes/SmartDocumentScene';
 import { GreenhouseScene } from '../scenes/GreenhouseScene';
+import { WebGLBoundary } from './WebGLBoundary';
+import { useInView } from '../hooks/useInView';
 import { soundManager } from '../utils/audio';
 
 interface ProjectCardProps {
@@ -20,6 +22,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   index,
 }) => {
   const isEven = index % 2 === 0;
+  const { ref: containerRef, isInView } = useInView();
 
   const renderScene = () => {
     switch (project.sceneType) {
@@ -37,7 +40,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   return (
-    <div
+    <article
+      ref={containerRef}
       className={`group relative rounded-3xl border border-[#272733] bg-[#14141c]/90 hover:border-[#FF5B35]/50 transition-all duration-500 overflow-hidden shadow-xl p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center ${
         isEven ? '' : 'lg:flex-row-reverse'
       }`}
@@ -112,7 +116,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             onMouseEnter={() => soundManager.playHover()}
             data-cursor="hover"
             data-cursor-text="DEEP DIVE"
-            className="px-4 py-2.5 rounded-xl bg-[#FF5B35] text-white font-mono text-xs font-semibold tracking-wider flex items-center space-x-2 shadow-md shadow-[#FF5B35]/25 hover:bg-[#ff4419] transition-all"
+            className="px-4 py-2.5 rounded-xl bg-[#FF5B35] text-white font-mono text-xs font-semibold tracking-wider flex items-center space-x-2 shadow-md shadow-[#FF5B35]/25 hover:bg-[#ff4419] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
+            aria-label={`Open architecture and algorithm deep dive for ${project.title}`}
           >
             <span>Architecture &amp; Algorithms</span>
             <ArrowUpRight className="w-4 h-4" />
@@ -122,11 +127,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             <a
               href={project.liveUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               onMouseEnter={() => soundManager.playHover()}
               data-cursor="hover"
               data-cursor-text="LIVE APP"
-              className="px-4 py-2.5 rounded-xl border border-[#272733] bg-[#1a1a24] text-[#F4F0E6] hover:border-[#FF5B35] font-mono text-xs font-medium flex items-center space-x-1.5 transition-colors"
+              className="px-4 py-2.5 rounded-xl border border-[#272733] bg-[#1a1a24] text-[#F4F0E6] hover:border-[#FF5B35] font-mono text-xs font-medium flex items-center space-x-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
+              aria-label={`Open live demonstration of ${project.title}`}
             >
               <span>Live Demo</span>
               <ExternalLink className="w-3.5 h-3.5 text-[#FF5B35]" />
@@ -136,12 +142,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           <a
             href={project.githubUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             onMouseEnter={() => soundManager.playHover()}
             data-cursor="hover"
             data-cursor-text="CODE"
-            className="px-4 py-2.5 rounded-xl border border-[#272733] bg-[#1a1a24] text-[#A7A3AD] hover:text-[#F4F0E6] hover:border-[#272733]/90 font-mono text-xs font-medium flex items-center space-x-1.5 transition-colors"
-            title="GitHub Repository"
+            className="px-4 py-2.5 rounded-xl border border-[#272733] bg-[#1a1a24] text-[#A7A3AD] hover:text-[#F4F0E6] hover:border-[#272733]/90 font-mono text-xs font-medium flex items-center space-x-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
+            title={`View ${project.title} source code on GitHub`}
+            aria-label={`View ${project.title} source code on GitHub`}
           >
             <Github className="w-4 h-4" />
             <span>GitHub</span>
@@ -150,25 +157,29 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       </div>
 
       {/* 3D Visual Preview Composition Column */}
-      <div className={`lg:col-span-6 relative w-full h-[320px] sm:h-[400px] rounded-2xl overflow-hidden border border-[#272733]/80 bg-[#0d0d12] flex items-center justify-center ${
-        isEven ? 'order-2' : 'order-2 lg:order-1'
-      }`}>
-        <div className="absolute inset-0 bg-radial-gradient pointer-events-none opacity-30"
+      <div
+        className={`lg:col-span-6 relative w-full h-[320px] sm:h-[400px] rounded-2xl overflow-hidden border border-[#272733]/80 bg-[#0d0d12] flex items-center justify-center ${
+          isEven ? 'order-2' : 'order-2 lg:order-1'
+        }`}
+      >
+        <div
+          className="absolute inset-0 bg-radial-gradient pointer-events-none opacity-30"
           style={{
-            background: `radial-gradient(circle at center, ${project.accentColor}25 0%, transparent 70%)`
+            background: `radial-gradient(circle at center, ${project.accentColor}25 0%, transparent 70%)`,
           }}
         />
 
-        {/* 3D Canvas */}
-        <Canvas
-          camera={{ position: [0, 2, 4.5], fov: 45 }}
-          dpr={[1, 1.8]}
-          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-        >
-          <Suspense fallback={null}>
-            {renderScene()}
-          </Suspense>
-        </Canvas>
+        {/* 3D Canvas with WebGL Boundary and Viewport optimization */}
+        <WebGLBoundary fallbackTitle={`${project.title} 3D Simulation`}>
+          <Canvas
+            camera={{ position: [0, 2, 4.5], fov: 45 }}
+            dpr={[1, 1.75]}
+            frameloop={isInView ? 'always' : 'never'}
+            gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+          >
+            <Suspense fallback={null}>{renderScene()}</Suspense>
+          </Canvas>
+        </WebGLBoundary>
 
         {/* Interactive 3D pill */}
         <div className="absolute bottom-3 right-3 flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#101014]/90 border border-[#272733] text-[10px] font-mono text-[#A7A3AD] pointer-events-none">
@@ -176,6 +187,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           <span>INTERACTIVE 3D SIMULATION</span>
         </div>
       </div>
-    </div>
+    </article>
   );
 };

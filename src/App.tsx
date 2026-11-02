@@ -20,14 +20,22 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#101014] text-[#F4F0E6] relative selection:bg-[#FF5B35] selection:text-white">
+      {/* Keyboard Accessibility Skip Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[99999] focus:px-4 focus:py-2 focus:bg-[#FF5B35] focus:text-white focus:rounded-lg focus:font-mono focus:text-xs shadow-xl"
+      >
+        Skip to main content
+      </a>
+
       {/* Precision Custom Cursor */}
       <CustomCursor />
 
       {/* Global Navigation Bar */}
       <Navbar />
 
-      {/* Hero Section with Massive Typography and 3D Terminal Canvas */}
-      <main>
+      {/* Main Content Sections */}
+      <main id="main-content">
         <Hero onOpenResume={() => setIsResumeOpen(true)} />
 
         {/* Dynamic Editorial Marquee */}

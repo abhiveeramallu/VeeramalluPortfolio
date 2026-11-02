@@ -34,18 +34,20 @@ export const Footer: React.FC = () => {
           <a
             href="https://github.com/abhiveeramallu"
             target="_blank"
-            rel="noreferrer"
-            className="hover:text-[#FF5B35] transition-colors"
+            rel="noopener noreferrer"
+            className="hover:text-[#FF5B35] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#FF5B35]"
             title="GitHub"
+            aria-label="GitHub Profile"
           >
             <Github className="w-4 h-4" />
           </a>
           <a
             href="https://linkedin.com/in/abhiramveeramallu"
             target="_blank"
-            rel="noreferrer"
-            className="hover:text-[#8B5CF6] transition-colors"
+            rel="noopener noreferrer"
+            className="hover:text-[#8B5CF6] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8B5CF6]"
             title="LinkedIn"
+            aria-label="LinkedIn Profile"
           >
             <Linkedin className="w-4 h-4" />
           </a>

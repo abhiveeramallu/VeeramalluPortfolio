@@ -24,11 +24,27 @@ export const ThreatLensScene: React.FC = () => {
         pos: [x, y, z] as [number, number, number],
         isThreat,
         color: isThreat ? '#FF5B35' : '#8B5CF6',
-        scale: isThreat ? 0.14 : 0.09
+        scale: isThreat ? 0.14 : 0.09,
       });
     }
     return list;
   }, []);
+
+  // Single batched draw-call LineSegments for all connection vectors
+  const connectionSegments = useMemo(() => {
+    const points: THREE.Vector3[] = [];
+    nodes.forEach((node) => {
+      points.push(new THREE.Vector3(0, 0, 0));
+      points.push(new THREE.Vector3(node.pos[0] * 0.7, node.pos[1] * 0.7, node.pos[2] * 0.7));
+    });
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({
+      color: '#8B5CF6',
+      transparent: true,
+      opacity: 0.3,
+    });
+    return new THREE.LineSegments(geometry, material);
+  }, [nodes]);
 
   useFrame((state, delta) => {
     if (coreRef.current) {
@@ -102,6 +118,7 @@ export const ThreatLensScene: React.FC = () => {
 
       {/* Threat and telemetry nodes orbiting around */}
       <group ref={nodesGroupRef}>
+        <primitive object={connectionSegments} />
         {nodes.map((node, i) => (
           <group key={i} position={node.pos}>
             <mesh scale={node.scale}>
@@ -119,23 +136,6 @@ export const ThreatLensScene: React.FC = () => {
                 <meshBasicMaterial color="#FF5B35" transparent opacity={0.6} side={THREE.DoubleSide} />
               </mesh>
             )}
-            {/* Vector line to center */}
-            <line>
-              <bufferGeometry
-                attach="geometry"
-                onUpdate={(self) => {
-                  self.setFromPoints([
-                    new THREE.Vector3(0, 0, 0),
-                    new THREE.Vector3(-node.pos[0] * 0.7, -node.pos[1] * 0.7, -node.pos[2] * 0.7)
-                  ]);
-                }}
-              />
-              <lineBasicMaterial
-                color={node.color}
-                transparent
-                opacity={node.isThreat ? 0.35 : 0.15}
-              />
-            </line>
           </group>
         ))}
       </group>

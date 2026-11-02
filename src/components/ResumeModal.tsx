@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { X, Printer, Download, ExternalLink, GraduationCap, Award, Code2, Mail, Github, Linkedin } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { X, Printer, Download, ExternalLink, GraduationCap, Award, Code2, Mail, Github, Linkedin, Check } from 'lucide-react';
 import { soundManager } from '../utils/audio';
 
 interface ResumeModalProps {
@@ -8,6 +8,9 @@ interface ResumeModalProps {
 }
 
 export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => {
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const [downloaded, setDownloaded] = React.useState(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -18,6 +21,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
+      setTimeout(() => closeBtnRef.current?.focus(), 50);
     }
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -32,8 +36,85 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
     window.print();
   };
 
+  const handleDownloadPlaintext = () => {
+    soundManager.playSuccess();
+    const resumeText = `VEERAMALLU SAI ABHIRAM
+Computer Science Student | AI Engineer | Full-Stack Architect
+VIT Vellore, India
+Email: abhiram.veeramallu@gmail.com
+GitHub: https://github.com/abhiveeramallu
+LinkedIn: https://linkedin.com/in/abhiramveeramallu
+
+==================================================
+EDUCATION
+==================================================
+Vellore Institute of Technology (VIT), Vellore
+Bachelor of Technology in Computer Science and Engineering
+Expected Graduation: 2027
+Coursework: Data Structures & Algorithms, Operating Systems, Database Management Systems, Computer Networks, Machine Learning, Theory of Computation.
+
+==================================================
+HONORS & CERTIFICATIONS
+==================================================
+* VIT Merit Scholarship — Vellore Institute of Technology
+  Awarded institutional merit scholarship in recognition of exceptional competitive rank and academic performance.
+* IBM Generative AI Engineering Professional Certificate — IBM (2024)
+  Specialization covering Large Language Models, prompt engineering, RAG architecture, vector search, and model operationalization.
+
+==================================================
+FLAGSHIP ENGINEERING PROJECTS
+==================================================
+1. RouteFusion — Ride & Parcel Optimization Platform
+   Tech: React, TypeScript, FastAPI, PostgreSQL, Hungarian Algorithm
+   - Engineered an intelligent multimodal assignment engine utilizing the Hungarian Algorithm for optimal bipartite matching.
+   - Designed spatial grid pruning reducing O(N*M) candidate search spaces for sub-100ms response times.
+   - Repository: https://github.com/abhiveeramallu/RouteFusion
+   - Live Application: https://route-fusion.vercel.app/
+
+2. ThreatLensAI — Bot Detection & Threat Telemetry Platform
+   Tech: Node.js, Express, PostgreSQL, Python, XGBoost, Scikit-learn
+   - Developed real-time behavioral biometric classifier analyzing mouse curvature, keystroke dynamics, and network headers.
+   - Applied XGBoost gradient boosting to classify malicious automated bots with zero CAPTCHA user friction.
+   - Repository: https://github.com/abhiveeramallu/ThreatlensAI
+
+3. Smart Document Intelligence
+   Tech: FastAPI, React, SQLite, Ollama
+   - On-premise confidential document analysis pipeline utilizing local Ollama LLMs and OCR with zero data exfiltration.
+
+4. Greenhouse Micro-Climate Forecasting
+   Tech: Python, GRU, BiLSTM, FastAPI, React
+   - Deep learning multivariable time-series forecasting comparing GRU and BiLSTM models for predictive micro-climate control.
+
+==================================================
+TECHNICAL COMPETENCIES
+==================================================
+* Languages: Python, Java, JavaScript, TypeScript, C++, SQL
+* Frameworks: React, FastAPI, Flask, Node.js, Express
+* AI & ML: Ollama, Generative AI, Machine Learning, XGBoost, Scikit-learn, GRU, BiLSTM
+* Databases & Tools: PostgreSQL, MySQL, SQLite, Git, GitHub, Docker, Three.js, VS Code
+`;
+
+    const blob = new Blob([resumeText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Veeramallu_Sai_Abhiram_Resume.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setDownloaded(true);
+    setTimeout(() => setDownloaded(false), 3000);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-10 overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-resume-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-10 overflow-y-auto"
+    >
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-[#101014]/90 backdrop-blur-xl transition-opacity animate-in fade-in"
@@ -50,26 +131,49 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
         <div className="px-6 py-4 border-b border-[#272733] bg-[#161622] flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#FF5B35]" />
-            <span className="font-mono text-xs font-bold text-[#F4F0E6] uppercase tracking-wider">
+            <h2 id="modal-resume-title" className="font-mono text-xs font-bold text-[#F4F0E6] uppercase tracking-wider">
               CURRICULUM VITAE // VEERAMALLU SAI ABHIRAM
-            </span>
+            </h2>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <button
+              onClick={handleDownloadPlaintext}
+              onMouseEnter={() => soundManager.playHover()}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-[#272733] bg-[#1a1a26] text-xs font-mono text-[#F4F0E6] hover:border-[#FF5B35] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
+              title="Download clean plain-text resume"
+            >
+              {downloaded ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="hidden sm:inline">Downloaded</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-3.5 h-3.5 text-[#FF5B35]" />
+                  <span className="hidden sm:inline">Download TXT</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={handlePrint}
               onMouseEnter={() => soundManager.playHover()}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-[#272733] bg-[#1a1a26] text-xs font-mono text-[#F4F0E6] hover:border-[#FF5B35] transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-[#272733] bg-[#1a1a26] text-xs font-mono text-[#F4F0E6] hover:border-[#FF5B35] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
+              title="Print or Save as PDF"
             >
               <Printer className="w-3.5 h-3.5 text-[#FF5B35]" />
-              <span>Print / Save PDF</span>
+              <span>Print / PDF</span>
             </button>
+
             <button
+              ref={closeBtnRef}
               onClick={() => {
                 soundManager.playClick();
                 onClose();
               }}
-              className="p-1.5 rounded-lg text-[#A7A3AD] hover:text-[#F4F0E6] hover:bg-[#22222d] transition-colors"
+              className="p-1.5 rounded-lg text-[#A7A3AD] hover:text-[#F4F0E6] hover:bg-[#22222d] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
+              aria-label="Close curriculum vitae modal"
             >
               <X className="w-5 h-5" />
             </button>
@@ -77,7 +181,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
         </div>
 
         {/* Printable Resume Document */}
-        <div className="p-8 sm:p-10 overflow-y-auto font-sans text-[#F4F0E6] space-y-8 select-text bg-[#121218]">
+        <div id="printable-resume" className="p-8 sm:p-10 overflow-y-auto font-sans text-[#F4F0E6] space-y-8 select-text bg-[#121218]">
           
           {/* Header */}
           <div className="border-b border-[#272733] pb-6">
@@ -92,11 +196,11 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
               <span>•</span>
               <span className="text-[#F4F0E6]">abhiram.veeramallu@gmail.com</span>
               <span>•</span>
-              <a href="https://github.com/abhiveeramallu" target="_blank" rel="noreferrer" className="hover:text-[#FF5B35] underline">
+              <a href="https://github.com/abhiveeramallu" target="_blank" rel="noopener noreferrer" className="hover:text-[#FF5B35] underline">
                 github.com/abhiveeramallu
               </a>
               <span>•</span>
-              <a href="https://linkedin.com/in/abhiramveeramallu" target="_blank" rel="noreferrer" className="hover:text-[#8B5CF6] underline">
+              <a href="https://linkedin.com/in/abhiramveeramallu" target="_blank" rel="noopener noreferrer" className="hover:text-[#8B5CF6] underline">
                 linkedin.com/in/abhiramveeramallu
               </a>
             </div>
@@ -104,10 +208,10 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
 
           {/* Education */}
           <div>
-            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF5B35] mb-3 flex items-center space-x-2">
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF5B35] mb-3 flex items-center space-x-2">
               <GraduationCap className="w-4 h-4" />
               <span>Education</span>
-            </h2>
+            </h3>
             <div className="p-4 rounded-xl border border-[#272733] bg-[#161620] space-y-1">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <span className="font-bold text-base text-[#F4F0E6]">Vellore Institute of Technology (VIT)</span>
@@ -115,23 +219,23 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
               </div>
               <div className="text-xs font-mono text-[#8B5CF6]">Bachelor of Technology in Computer Science and Engineering</div>
               <p className="text-xs text-[#A7A3AD] mt-2">
-                Coursework: Data Structures &amp; Algorithms, Operating Systems, Database Management Systems, Computer Networks, Machine Learning, and Theory of Computation.
+                Core Coursework: Data Structures &amp; Algorithms, Operating Systems, Database Management Systems, Computer Networks, Machine Learning, and Theory of Computation.
               </p>
             </div>
           </div>
 
           {/* Honors & Certifications */}
           <div>
-            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF5B35] mb-3 flex items-center space-x-2">
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF5B35] mb-3 flex items-center space-x-2">
               <Award className="w-4 h-4" />
               <span>Honors &amp; Certifications</span>
-            </h2>
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-4 rounded-xl border border-[#272733] bg-[#161620]">
                 <div className="font-bold text-sm text-[#F4F0E6]">VIT Merit Scholarship</div>
                 <div className="text-xs font-mono text-[#FF5B35] mt-0.5">Vellore Institute of Technology</div>
                 <p className="text-xs text-[#A7A3AD] mt-2">
-                  Awarded institutional merit scholarship in recognition of exceptional competitive rank and academic excellence.
+                  Awarded institutional merit scholarship in recognition of competitive rank standing and academic excellence.
                 </p>
               </div>
 
@@ -147,10 +251,10 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
 
           {/* Technical Projects */}
           <div>
-            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF5B35] mb-3 flex items-center space-x-2">
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF5B35] mb-3 flex items-center space-x-2">
               <Code2 className="w-4 h-4" />
               <span>Flagship Engineering Projects</span>
-            </h2>
+            </h3>
 
             <div className="space-y-4">
               <div className="p-4 rounded-xl border border-[#272733] bg-[#161620] space-y-1.5">
@@ -187,9 +291,9 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
 
           {/* Technical Skills Summary */}
           <div>
-            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF5B35] mb-2">
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF5B35] mb-2">
               Technical Competencies
-            </h2>
+            </h3>
             <div className="text-xs font-mono text-[#A7A3AD] space-y-1.5">
               <div><strong className="text-[#F4F0E6]">Languages:</strong> Python, Java, JavaScript, TypeScript, C++, SQL</div>
               <div><strong className="text-[#F4F0E6]">Frameworks:</strong> React, FastAPI, Flask, Node.js, Express</div>

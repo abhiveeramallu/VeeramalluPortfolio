@@ -1,7 +1,9 @@
 import React, { useState, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { ArrowUpRight, Mail, Copy, Check, Github, Linkedin, FileText, Send, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Mail, Copy, Check, Github, Linkedin, FileText, Send, Sparkles, RotateCcw } from 'lucide-react';
 import { ContactMesh3D } from '../scenes/ContactMesh3D';
+import { WebGLBoundary } from './WebGLBoundary';
+import { useInView } from '../hooks/useInView';
 import { soundManager } from '../utils/audio';
 
 interface ContactProps {
@@ -12,6 +14,7 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
   const [copied, setCopied] = useState(false);
   const [formState, setFormState] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const { ref: canvasContainerRef, isInView } = useInView();
 
   const contactEmail = 'abhiram.veeramallu@gmail.com';
 
@@ -32,6 +35,12 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
       formState.name || 'Collaborator'
     )}&body=${encodeURIComponent(formState.message)}`;
     window.location.href = mailto;
+  };
+
+  const handleResetForm = () => {
+    soundManager.playClick();
+    setSubmitted(false);
+    setFormState({ name: '', email: '', message: '' });
   };
 
   return (
@@ -71,8 +80,9 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
                 onMouseEnter={() => soundManager.playHover()}
                 data-cursor="hover"
                 data-cursor-text="COPY"
-                className="px-3 py-1.5 rounded-lg bg-[#222230] hover:bg-[#FF5B35] text-white transition-colors flex items-center space-x-1"
+                className="px-3 py-1.5 rounded-lg bg-[#222230] hover:bg-[#FF5B35] text-white transition-colors flex items-center space-x-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
                 title="Copy email to clipboard"
+                aria-label="Copy email address"
               >
                 {copied ? (
                   <>
@@ -90,16 +100,22 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
           </div>
 
           {/* Large 3D Geometric Element */}
-          <div className="lg:col-span-5 h-[340px] sm:h-[420px] rounded-3xl border border-[#272733] bg-[#0f0f15]/80 overflow-hidden relative shadow-2xl flex items-center justify-center">
-            <Canvas
-              camera={{ position: [0, 0, 4.2], fov: 45 }}
-              dpr={[1, 1.8]}
-              gl={{ antialias: true, alpha: true }}
-            >
-              <Suspense fallback={null}>
-                <ContactMesh3D />
-              </Suspense>
-            </Canvas>
+          <div
+            ref={canvasContainerRef}
+            className="lg:col-span-5 h-[340px] sm:h-[420px] rounded-3xl border border-[#272733] bg-[#0f0f15]/80 overflow-hidden relative shadow-2xl flex items-center justify-center"
+          >
+            <WebGLBoundary fallbackTitle="Quantum Neural Transmitter">
+              <Canvas
+                camera={{ position: [0, 0, 4.2], fov: 45 }}
+                dpr={[1, 1.75]}
+                frameloop={isInView ? 'always' : 'never'}
+                gl={{ antialias: true, alpha: true }}
+              >
+                <Suspense fallback={null}>
+                  <ContactMesh3D />
+                </Suspense>
+              </Canvas>
+            </WebGLBoundary>
 
             <div className="absolute bottom-3 right-3 text-[10px] font-mono text-[#A7A3AD] bg-[#101014]/90 px-3 py-1 rounded-md border border-[#272733]">
               NEURAL TRANSMITTER ONLINE
@@ -119,56 +135,68 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
             </h3>
 
             {submitted ? (
-              <div className="p-6 rounded-xl border border-emerald-500/40 bg-emerald-950/20 text-center space-y-2">
+              <div className="p-6 rounded-xl border border-emerald-500/40 bg-emerald-950/20 text-center space-y-4">
                 <Check className="w-8 h-8 text-emerald-400 mx-auto" />
-                <h4 className="font-display text-lg font-bold text-[#F4F0E6]">Transmission Prepared</h4>
-                <p className="text-xs font-mono text-[#A7A3AD]">
-                  Opening your default mail client with your compiled message. You can also reach me directly at {contactEmail}.
-                </p>
+                <div>
+                  <h4 className="font-display text-lg font-bold text-[#F4F0E6]">Transmission Prepared</h4>
+                  <p className="text-xs font-mono text-[#A7A3AD] mt-1">
+                    Opening your default mail client with your compiled message. You can also reach me directly at {contactEmail}.
+                  </p>
+                </div>
+                <button
+                  onClick={handleResetForm}
+                  className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-[#272733] bg-[#161622] hover:border-[#FF5B35] text-xs font-mono text-[#F4F0E6] transition-colors"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-[#FF5B35]" />
+                  <span>Send Another Transmission</span>
+                </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[11px] font-mono uppercase text-[#A7A3AD] mb-1.5">
+                    <label htmlFor="contact-name" className="block text-[11px] font-mono uppercase text-[#A7A3AD] mb-1.5">
                       Your Name / Organization
                     </label>
                     <input
+                      id="contact-name"
                       type="text"
                       required
                       value={formState.name}
                       onChange={(e) => setFormState({ ...formState, name: e.target.value })}
                       placeholder="Jane Doe or Acme Corp"
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#272733] bg-[#181824] text-[#F4F0E6] font-mono text-xs outline-none focus:border-[#FF5B35] transition-colors"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#272733] bg-[#181824] text-[#F4F0E6] font-mono text-xs outline-none focus:border-[#FF5B35] transition-colors focus-visible:ring-1 focus-visible:ring-[#FF5B35]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-mono uppercase text-[#A7A3AD] mb-1.5">
+                    <label htmlFor="contact-email" className="block text-[11px] font-mono uppercase text-[#A7A3AD] mb-1.5">
                       Your Email Frequency
                     </label>
                     <input
+                      id="contact-email"
                       type="email"
                       required
                       value={formState.email}
                       onChange={(e) => setFormState({ ...formState, email: e.target.value })}
                       placeholder="jane@company.com"
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#272733] bg-[#181824] text-[#F4F0E6] font-mono text-xs outline-none focus:border-[#FF5B35] transition-colors"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#272733] bg-[#181824] text-[#F4F0E6] font-mono text-xs outline-none focus:border-[#FF5B35] transition-colors focus-visible:ring-1 focus-visible:ring-[#FF5B35]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase text-[#A7A3AD] mb-1.5">
+                  <label htmlFor="contact-message" className="block text-[11px] font-mono uppercase text-[#A7A3AD] mb-1.5">
                     Project Brief or Message
                   </label>
                   <textarea
+                    id="contact-message"
                     required
                     rows={4}
                     value={formState.message}
                     onChange={(e) => setFormState({ ...formState, message: e.target.value })}
                     placeholder="Describe your project, role, or collaboration vision..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#272733] bg-[#181824] text-[#F4F0E6] font-mono text-xs outline-none focus:border-[#FF5B35] transition-colors resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#272733] bg-[#181824] text-[#F4F0E6] font-mono text-xs outline-none focus:border-[#FF5B35] transition-colors resize-none focus-visible:ring-1 focus-visible:ring-[#FF5B35]"
                   />
                 </div>
 
@@ -177,7 +205,7 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
                   onMouseEnter={() => soundManager.playHover()}
                   data-cursor="hover"
                   data-cursor-text="DISPATCH"
-                  className="w-full py-3.5 rounded-xl bg-[#FF5B35] hover:bg-[#ff4419] text-white font-mono text-xs font-bold tracking-wider flex items-center justify-center space-x-2 shadow-lg shadow-[#FF5B35]/30 transition-all"
+                  className="w-full py-3.5 rounded-xl bg-[#FF5B35] hover:bg-[#ff4419] text-white font-mono text-xs font-bold tracking-wider flex items-center justify-center space-x-2 shadow-lg shadow-[#FF5B35]/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 >
                   <Send className="w-4 h-4" />
                   <span>Dispatch Transmission</span>
@@ -192,11 +220,12 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
             <a
               href="https://github.com/abhiveeramallu"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               onMouseEnter={() => soundManager.playHover()}
               data-cursor="hover"
               data-cursor-text="OPEN"
-              className="p-5 rounded-2xl border border-[#272733] bg-[#14141c] hover:border-[#FF5B35] hover:bg-[#181824] transition-all flex items-center justify-between group"
+              className="p-5 rounded-2xl border border-[#272733] bg-[#14141c] hover:border-[#FF5B35] hover:bg-[#181824] transition-all flex items-center justify-between group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
+              aria-label="Visit GitHub Profile @abhiveeramallu"
             >
               <div className="flex items-center space-x-3.5">
                 <div className="p-3 rounded-xl bg-[#1d1d2b] text-[#FF5B35] group-hover:scale-110 transition-transform">
@@ -214,11 +243,12 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
             <a
               href="https://linkedin.com/in/abhiramveeramallu"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               onMouseEnter={() => soundManager.playHover()}
               data-cursor="hover"
               data-cursor-text="CONNECT"
-              className="p-5 rounded-2xl border border-[#272733] bg-[#14141c] hover:border-[#8B5CF6] hover:bg-[#181824] transition-all flex items-center justify-between group"
+              className="p-5 rounded-2xl border border-[#272733] bg-[#14141c] hover:border-[#8B5CF6] hover:bg-[#181824] transition-all flex items-center justify-between group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6]"
+              aria-label="Connect with Veeramallu Sai Abhiram on LinkedIn"
             >
               <div className="flex items-center space-x-3.5">
                 <div className="p-3 rounded-xl bg-[#1d1d2b] text-[#8B5CF6] group-hover:scale-110 transition-transform">
@@ -234,6 +264,15 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
 
             {/* Curriculum Vitae / Resume Card */}
             <div
+              tabIndex={0}
+              role="button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  soundManager.playClick();
+                  onOpenResume();
+                }
+              }}
               onClick={() => {
                 soundManager.playClick();
                 onOpenResume();
@@ -241,7 +280,8 @@ export const Contact: React.FC<ContactProps> = ({ onOpenResume }) => {
               onMouseEnter={() => soundManager.playHover()}
               data-cursor="hover"
               data-cursor-text="VIEW"
-              className="p-5 rounded-2xl border border-[#272733] bg-[#14141c] hover:border-[#C7D9B5] hover:bg-[#181824] transition-all flex items-center justify-between cursor-pointer group"
+              className="p-5 rounded-2xl border border-[#272733] bg-[#14141c] hover:border-[#C7D9B5] hover:bg-[#181824] transition-all flex items-center justify-between cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C7D9B5]"
+              aria-label="View verified resume and academic credentials"
             >
               <div className="flex items-center space-x-3.5">
                 <div className="p-3 rounded-xl bg-[#1d1d2b] text-[#C7D9B5] group-hover:scale-110 transition-transform">

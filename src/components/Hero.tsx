@@ -102,11 +102,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
               <a
                 href="https://github.com/abhiveeramallu"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 onMouseEnter={() => soundManager.playHover()}
-                className="flex items-center space-x-1.5 hover:text-[#FF5B35] transition-colors"
+                className="flex items-center space-x-1.5 hover:text-[#FF5B35] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5B35]"
                 data-cursor="hover"
                 data-cursor-text="GITHUB"
+                aria-label="View Abhiram's GitHub profile"
               >
                 <Github className="w-4 h-4" />
                 <span>github.com/abhiveeramallu</span>
@@ -116,11 +117,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenResume }) => {
               <a
                 href="https://linkedin.com/in/abhiramveeramallu"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 onMouseEnter={() => soundManager.playHover()}
-                className="flex items-center space-x-1.5 hover:text-[#8B5CF6] transition-colors"
+                className="flex items-center space-x-1.5 hover:text-[#8B5CF6] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6]"
                 data-cursor="hover"
                 data-cursor-text="LINKEDIN"
+                aria-label="View Abhiram's LinkedIn profile"
               >
                 <Linkedin className="w-4 h-4" />
                 <span>LinkedIn</span>
