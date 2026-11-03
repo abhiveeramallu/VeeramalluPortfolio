@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUp, MessageCircle, Square, X } from 'lucide-react';
 import { SITE_CONFIG } from '@/data/content';
@@ -29,6 +30,7 @@ let counter = 0;
 const uid = () => `${Date.now()}-${counter++}`;
 
 export function AskMeChat() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -141,8 +143,10 @@ export function AskMeChat() {
 
   const showChips = messages.length <= 1;
 
+  if (pathname === '/contact') return null;
+
   return (
-    <div className="no-print fixed bottom-6 right-4 z-50 sm:right-6">
+    <div className="no-print fixed bottom-4 right-4 z-[60] sm:bottom-6 sm:right-6">
       <button
         ref={triggerRef}
         type="button"

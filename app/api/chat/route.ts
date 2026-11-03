@@ -10,6 +10,9 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const MODEL = process.env.CLAUDE_MODEL || 'claude-opus-5-5';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+
 // Server-side refusal fallback ("default" routing) is only accepted by these models.
 const SUPPORTS_DEFAULT_FALLBACK = [
   'claude-opus-5-5',
@@ -26,6 +29,66 @@ const HEADERS = {
   Connection: 'keep-alive',
   'X-Accel-Buffering': 'no',
 };
+
+/** Streams from Google Gemini via Server-Sent Events */
+async function streamGemini(
+  apiKey: string,
+  model: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  message: string,
+  signal: AbortSignal,
+  onDelta: (text: string) => void,
+) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal,
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [
+        ...history.map((t) => ({
+          role: t.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: t.content }],
+        })),
+        {
+          role: 'user',
+          parts: [{ text: `<visitor_message>${message}</visitor_message>` }],
+        },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => '');
+    throw new Error(`Gemini API error ${res.status}: ${errorBody.slice(0, 200)}`);
+  }
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error('No readable stream from Gemini API');
+
+  const decoder = new TextDecoder();
+  let buf = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop() || '';
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        try {
+          const json = JSON.parse(line.slice(6));
+          const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) onDelta(text);
+        } catch {
+          // ignore partial json
+        }
+      }
+    }
+  }
+}
 
 /** Streams a canned answer word by word so the UI behaves identically with or without an API key. */
 function cannedStream(text: string, sources: ChatSource[]) {
@@ -82,7 +145,9 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!client) {
+  const hasLiveAI = Boolean(GEMINI_API_KEY || client);
+
+  if (!hasLiveAI) {
     const faq = faqAnswer(message);
     return new Response(cannedStream(faq.text, faq.sources), { headers: HEADERS });
   }
@@ -93,35 +158,49 @@ export async function POST(req: Request) {
       const send = (ev: ChatEvent) => controller.enqueue(encoder.encode(encodeEvent(ev)));
       let full = '';
       try {
-        const claude = client.beta.messages.stream(
-          {
-            model: MODEL,
-            max_tokens: 4000,
-            output_config: { effort: 'low' },
-            ...(SUPPORTS_DEFAULT_FALLBACK.includes(MODEL)
-              ? { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' as const }
-              : {}),
-            // Static system prompt → cacheable prefix; the volatile visitor turn comes last.
-            system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-            messages: [
-              ...history.map((t) => ({ role: t.role, content: t.content })),
-              { role: 'user', content: `<visitor_message>${message}</visitor_message>` },
-            ],
-          },
-          { signal: req.signal },
-        );
+        if (GEMINI_API_KEY) {
+          await streamGemini(
+            GEMINI_API_KEY,
+            GEMINI_MODEL,
+            history,
+            message,
+            req.signal,
+            (chunk) => {
+              full += chunk;
+              send({ type: 'delta', text: chunk });
+            },
+          );
+        } else if (client) {
+          const claude = client.beta.messages.stream(
+            {
+              model: MODEL,
+              max_tokens: 4000,
+              output_config: { effort: 'low' },
+              ...(SUPPORTS_DEFAULT_FALLBACK.includes(MODEL)
+                ? { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' as const }
+                : {}),
+              system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+              messages: [
+                ...history.map((t) => ({ role: t.role, content: t.content })),
+                { role: 'user', content: `<visitor_message>${message}</visitor_message>` },
+              ],
+            },
+            { signal: req.signal },
+          );
 
-        for await (const event of claude) {
-          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-            full += event.delta.text;
-            send({ type: 'delta', text: event.delta.text });
+          for await (const event of claude) {
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+              full += event.delta.text;
+              send({ type: 'delta', text: event.delta.text });
+            }
+          }
+          const final = await claude.finalMessage();
+          if (final.stop_reason === 'refusal' && !full) {
+            full = `I can't help with that one, but I'm happy to answer questions about ${SITE_CONFIG.shortName}'s projects or skills.`;
+            send({ type: 'delta', text: full });
           }
         }
-        const final = await claude.finalMessage();
-        if (final.stop_reason === 'refusal' && !full) {
-          full = `I can't help with that one, but I'm happy to answer questions about ${SITE_CONFIG.shortName}'s projects or skills.`;
-          send({ type: 'delta', text: full });
-        }
+
         const sources = detectSources(full);
         if (sources.length) send({ type: 'sources', items: sources });
         send({ type: 'done', mode: 'live' });

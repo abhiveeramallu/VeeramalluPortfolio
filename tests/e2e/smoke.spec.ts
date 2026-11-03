@@ -10,6 +10,28 @@ function watchErrors(page: Page) {
   return errors;
 }
 
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    try {
+      sessionStorage.setItem('portfolio_intro_seen_v1', 'true');
+    } catch {
+      // storage unavailable
+    }
+  });
+});
+
+test('multilingual intro displays Abhiram and titles seamlessly when forced or fresh', async ({ page }) => {
+  await page.goto('/?intro=true');
+  const intro = page.getByRole('dialog', { name: 'Welcome introduction' });
+  await expect(intro).toBeVisible();
+  await expect(intro).toContainText('ABHIRAM');
+  await expect(intro).toContainText('FULL STACK DEVELOPER');
+  const skipBtn = intro.getByRole('button', { name: 'Skip introduction' });
+  await expect(skipBtn).toBeVisible();
+  await skipBtn.click();
+  await expect(intro).not.toBeVisible();
+});
+
 test('home shows name, intro, CTAs and every project in HTML', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/');
@@ -17,9 +39,9 @@ test('home shows name, intro, CTAs and every project in HTML', async ({ page }) 
   await expect(page.getByText('I build intelligent systems').first()).toBeVisible();
   await expect(page.getByRole('link', { name: /see what i’ve built/i })).toHaveAttribute('href', '#projects');
   await expect(page.getByRole('link', { name: /let’s connect/i })).toHaveAttribute('href', '#contact');
-  await expect(page.getByRole('link', { name: /résumé/i }).first()).toHaveAttribute(
+  await expect(page.getByRole('link', { name: /r[ée]sum[ée]/i }).first()).toHaveAttribute(
     'href',
-    '/DigitalVeeramalluSaiAbhiram.pdf',
+    '/resume',
   );
   await expect(page.locator('article[id^="project-"]')).toHaveCount(10);
   await expect(page.getByRole('img', { name: /Illustration for RouteFusion/ }).first()).toBeVisible();
@@ -31,16 +53,20 @@ test('home shows name, intro, CTAs and every project in HTML', async ({ page }) 
   expect(errors).toEqual([]);
 });
 
-test('primary navigation downloads the digital résumé', async ({ page, isMobile }) => {
+test('primary navigation navigates to the digital résumé page and allows download at bottom', async ({ page, isMobile }) => {
   await page.goto('/');
   if (isMobile) {
     await page.getByRole('button', { name: 'Open menu' }).click();
   }
   const resumeLink = isMobile
-    ? page.locator('#mobile-menu').getByRole('link', { name: /résumé/i })
+    ? page.locator('#mobile-menu').getByRole('link', { name: /r[ée]sum[ée]/i })
     : page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Resume' });
-  await expect(resumeLink).toHaveAttribute('href', '/DigitalVeeramalluSaiAbhiram.pdf');
-  await expect(resumeLink).toHaveAttribute('download', '');
+  await expect(resumeLink).toHaveAttribute('href', '/resume');
+  await resumeLink.click();
+  await expect(page).toHaveURL(/\/resume/);
+  const downloadLink = page.locator('#download-section').getByRole('link', { name: /Download Resume/i });
+  await expect(downloadLink).toHaveAttribute('href', '/DigitalVeeramalluSaiAbhiram.pdf');
+  await expect(downloadLink).toHaveAttribute('download', 'Veeramallu_Sai_Abhiram_Resume.pdf');
 });
 
 test('the playground is gone', async ({ page, request }) => {
@@ -89,12 +115,12 @@ test('skip link moves focus to main content', async ({ page, isMobile }) => {
 
 test('navigation reaches every top-level page', async ({ page, isMobile }) => {
   const errors = watchErrors(page);
-  await page.goto('/about');
+  await page.goto('/');
   for (const [name, path, heading] of [
     ['About', '/about', /Abhiram/],
     ['Contact', '/contact', /talk/],
   ] as const) {
-    if (isMobile) await page.getByRole('button', { name: 'Open menu' }).click();
+    if (isMobile) await page.getByRole('button', { name: 'Open menu' }).click({ force: true });
     await page
       .getByRole('navigation', { name: 'Main' })
       .getByRole('link', { name, exact: true })
@@ -104,7 +130,7 @@ test('navigation reaches every top-level page', async ({ page, isMobile }) => {
     await expect(page).toHaveURL(path);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
   }
-  if (isMobile) await page.getByRole('button', { name: 'Open menu' }).click();
+  if (isMobile) await page.getByRole('button', { name: 'Open menu' }).click({ force: true });
   await page
     .getByRole('navigation', { name: 'Main' })
     .getByRole('link', { name: 'Projects', exact: true })
@@ -168,7 +194,7 @@ test('contact form validates and reports delivery honestly', async ({ page }) =>
   await expect(page.getByLabel('Name')).toBeFocused();
 
   await page.getByLabel('Name').fill('Alex Morgan');
-  await page.getByLabel('Email').fill('alex@company.com');
+  await page.locator('#email').fill('alex@company.com');
   await page.getByLabel(/talk about/).fill('We have an internship opening on our platform team.');
   await page.getByRole('button', { name: 'Send message' }).click();
   // No RESEND_API_KEY in tests → honest fallback to the mail app, never a fake "sent".
@@ -177,7 +203,7 @@ test('contact form validates and reports delivery honestly', async ({ page }) =>
 });
 
 test('chat answers from content without an API key', async ({ page }) => {
-  await page.goto('/contact');
+  await page.goto('/');
   await page.getByRole('button', { name: /ask me anything/i }).click();
   const dialog = page.getByRole('dialog', { name: /Ask about/ });
   await expect(dialog).toBeVisible();
@@ -218,4 +244,16 @@ test('404 page leads back to the archive', async ({ page }) => {
   expect(res?.status()).toBe(404);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('missing');
   await expect(page.getByRole('link', { name: /RouteFusion/ }).first()).toBeVisible();
+});
+
+test('multilingual intro displays fixed typography and can be skipped', async ({ page }) => {
+  await page.goto('/?intro=true');
+  const dialog = page.getByRole('dialog', { name: /Welcome introduction/i });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText('ABHIRAM')).toBeVisible();
+  await expect(dialog.getByText(/Full Stack Developer/i)).toBeVisible();
+  const skipButton = dialog.getByRole('button', { name: /Skip/i });
+  await expect(skipButton).toBeVisible();
+  await skipButton.click();
+  await expect(dialog).toBeHidden({ timeout: 5000 });
 });

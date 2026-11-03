@@ -207,7 +207,7 @@ body::after {
     transform: scale(0.97);
   }
   .btn-primary {
-    @apply btn bg-accent text-night hover:bg-ink;
+    @apply btn bg-[#ff5a1f] text-white hover:bg-[#e04a14];
   }
   .btn-secondary {
     @apply btn border border-line text-ink hover:border-ink;
@@ -698,6 +698,14 @@ body::after {
 .theme-pop .btn-secondary {
   border: 2px solid rgb(var(--c-ink));
   box-shadow: 3px 3px 0 0 rgb(var(--c-ink));
+}
+.theme-pop .btn-primary {
+  background-color: #ff5a1f;
+  color: #ffffff;
+}
+.theme-pop .btn-primary:hover {
+  background-color: #e04a14;
+  color: #ffffff;
 }
 .theme-pop .btn-secondary {
   background-color: rgb(var(--c-bg));

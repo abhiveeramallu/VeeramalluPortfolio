@@ -18,19 +18,25 @@ export function Hero() {
   return (
     <section
       aria-labelledby="hero-title"
-      className="relative overflow-hidden bg-[#ff5a1f] pt-24 text-[#16121f] md:pt-28"
+      className="relative flex min-h-screen min-h-[100dvh] flex-col justify-center overflow-hidden bg-[#ff5a1f] pt-24 pb-12 text-[#16121f] md:pt-28 md:pb-16"
     >
-      <div className="relative mx-auto max-w-[1440px] px-4 md:px-10">
-        <div className="label flex flex-wrap items-center justify-between gap-3 border-y-2 border-[#16121f] py-2.5">
-          <span>Veeramallu Sai Abhiram</span>
-          <span>Full Stack &amp; AI Engineer</span>
-          <span>Visakhapatnam, India</span>
+      <div className="relative mx-auto w-full max-w-[1440px] px-4 md:px-10">
+        <div className="label flex flex-wrap items-center justify-between gap-3 border-y-2 border-[#16121f] py-2">
+          <span className="cursor-default select-none rounded-pill border-2 border-transparent px-3 py-1 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#16121f] hover:bg-[#fff3e6] hover:text-[#16121f] hover:shadow-[3px_3px_0_0_#16121f]">
+            Veeramallu Sai Abhiram
+          </span>
+          <span className="cursor-default select-none rounded-pill border-2 border-transparent px-3 py-1 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#16121f] hover:bg-[#fff3e6] hover:text-[#16121f] hover:shadow-[3px_3px_0_0_#16121f]">
+            Full Stack &amp; AI Engineer
+          </span>
+          <span className="cursor-default select-none rounded-pill border-2 border-transparent px-3 py-1 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#16121f] hover:bg-[#fff3e6] hover:text-[#16121f] hover:shadow-[3px_3px_0_0_#16121f]">
+            Visakhapatnam, India
+          </span>
         </div>
 
         <div className="grid items-center gap-6 lg:grid-cols-[0.8fr_1.2fr]">
           <div className="relative z-10 py-10 lg:py-20">
-            <div className="hero-in relative inline-block rounded-[28px] border-[3px] border-[#16121f] bg-[#fff3e6] px-6 py-3 shadow-[6px_6px_0_0_#16121f]">
-              <p className="font-[family-name:var(--font-slab)] text-step-3 leading-none text-[#c2410c]">
+            <div className="hero-in group relative inline-block cursor-default select-none rounded-[28px] border-[3px] border-[#16121f] bg-[#fff3e6] px-6 py-3 shadow-[6px_6px_0_0_#16121f] transition-all duration-200 hover:-translate-y-1 hover:shadow-[8px_8px_0_0_#16121f]">
+              <p className="font-[family-name:var(--font-slab)] text-step-3 leading-none text-[#c2410c] transition-transform duration-200 group-hover:scale-105">
                 Hello, World!
               </p>
               <span
@@ -43,7 +49,7 @@ export function Hero() {
               className="hero-in mt-8 font-[family-name:var(--font-slab)] text-step-4 leading-[0.92]"
             >
               I’m
-              <span className="ink-shadow block text-[clamp(3.6rem,2.2rem+5.6vw,7.5rem)] leading-[0.92] text-[#fff3e6]">
+              <span className="ink-shadow block cursor-default select-none text-[clamp(3.6rem,2.2rem+5.6vw,7.5rem)] leading-[0.92] text-[#fff3e6] transition-transform duration-200 hover:translate-x-2">
                 Abhiram.
               </span>
               <span className="sr-only"> — Veeramallu Sai Abhiram</span>
@@ -65,7 +71,9 @@ export function Hero() {
               {TAGS.map((t, i) => (
                 <li
                   key={t}
-                  className={`label rounded-pill border-2 border-[#16121f] px-3 py-1.5 ${i % 2 ? 'bg-[#fff3e6]' : 'bg-[#ffb21a]'}`}
+                  className={`label cursor-pointer select-none rounded-pill border-2 border-[#16121f] px-3.5 py-1.5 transition-all duration-200 ease-out hover:-translate-y-1 hover:rotate-0 hover:scale-105 hover:bg-[#16121f] hover:text-[#fff3e6] hover:shadow-[4px_4px_0_0_#16121f] ${
+                    i % 2 ? 'bg-[#fff3e6] text-[#16121f]' : 'bg-[#ffb21a] text-[#16121f]'
+                  }`}
                   style={{ rotate: `${(i % 2 ? 2 : -2) * (i + 1) * 0.5}deg` }}
                 >
                   {t}

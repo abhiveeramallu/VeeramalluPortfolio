@@ -104,8 +104,9 @@ export const SITE_CONFIG = {
 
   socials: {
     github: GH,
-    /** Empty until the profile URL is confirmed; empty links are never rendered. */
-    linkedin: '',
+    leetcode: 'https://leetcode.com/u/abhi97137/',
+    linkedin: 'https://www.linkedin.com/in/veeramallu-sai-abhiram-28870928a/',
+    instagram: 'https://www.instagram.com/abhi_veeramallu/',
   },
 
   interests: [

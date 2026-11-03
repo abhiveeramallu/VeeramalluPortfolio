@@ -6,6 +6,7 @@ import { SITE_URL } from '@/lib/site';
 import { personJsonLd, websiteJsonLd } from '@/lib/seo';
 import { SmoothScroll } from '@/components/ui/SmoothScroll';
 import { Navbar } from '@/components/ui/Navbar';
+import { MultilingualIntro } from '@/components/intro/MultilingualIntro';
 import { Footer } from '@/components/ui/Footer';
 import { ClientIslands } from '@/components/ui/ClientIslands';
 import { JsonLd } from '@/components/ui/JsonLd';
@@ -60,8 +61,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         <SmoothScroll />
+        <MultilingualIntro />
         <Navbar />
-        <main id="main-content" tabIndex={-1} className="relative min-h-screen outline-none">
+        <main id="main-content" tabIndex={-1} className="relative z-0 min-h-screen outline-none">
           {children}
         </main>
         <Footer />

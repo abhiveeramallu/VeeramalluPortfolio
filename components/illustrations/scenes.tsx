@@ -790,7 +790,7 @@ function About(): Layers {
     side: 'left',
     tint: C.blueDeep,
     burst: C.paper,
-    bubble: "HI, I'M ABHIRAM!",
+    bubble: "HEY, I'M ABHIRAM!",
     props: (
       <>
         <Sticker x={230} y={86} fill={C.paper} rot={-6} delay="-1s">

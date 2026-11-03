@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowUpRight, CheckCircle2, Send } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, Loader2, Send } from 'lucide-react';
 import { SITE_CONFIG } from '@/data/content';
 import { CONTACT_LIMITS, validateContact, type ContactErrors, type ContactInput } from '@/lib/validation';
 import { track } from '@/lib/analytics';
@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils';
 
 type Status = 'idle' | 'sending' | 'sent' | 'fallback' | 'error';
 
-const field =
-  'w-full rounded-xl border bg-bg px-4 py-3 text-sm text-ink placeholder:text-muted transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40';
+const fieldBase =
+  'w-full rounded-2xl border-2 bg-white px-4 py-3.5 text-sm font-medium text-ink placeholder:text-muted/60 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent/20';
 
 export function ContactForm() {
   const [values, setValues] = useState<ContactInput>({ name: '', email: '', message: '', website: '' });
@@ -18,7 +18,9 @@ export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle');
   const [serverError, setServerError] = useState('');
 
-  const mailto = `mailto:${SITE_CONFIG.email}?subject=${encodeURIComponent(`Hello from ${values.name || 'your portfolio'}`)}&body=${encodeURIComponent(values.message)}`;
+  const mailto = `mailto:${SITE_CONFIG.email}?subject=${encodeURIComponent(
+    `Portfolio Inquiry — ${values.name || 'Abhiram'}`,
+  )}&body=${encodeURIComponent(`${values.message}\n\n— ${values.name} <${values.email}>`)}`;
 
   const update =
     (key: keyof ContactInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -66,13 +68,15 @@ export function ContactForm() {
 
   if (status === 'sent') {
     return (
-      <div role="status" className="py-10 text-center">
-        <CheckCircle2 className="mx-auto h-12 w-12 text-accent" aria-hidden="true" />
-        <h2 className="type-h3 mt-4 text-ink">
+      <div role="status" className="rounded-3xl border-2 border-ink bg-[#ffedd5] p-8 text-center shadow-[4px_4px_0_0_rgb(var(--c-ink))] sm:p-12">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-ink bg-white text-accent shadow-[2px_2px_0_0_rgb(var(--c-ink))]">
+          <CheckCircle2 className="h-8 w-8" aria-hidden="true" />
+        </div>
+        <h2 className="type-h2 mt-5 text-ink font-bold">
           Message <span className="accent-word text-accent">received.</span>
         </h2>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
-          Thanks, {values.name.split(' ')[0]}. I reply within one working day.
+        <p className="mx-auto mt-3 max-w-sm text-sm font-medium leading-relaxed text-soft">
+          Thanks for reaching out, {values.name.split(' ')[0]}. I review inquiries personally and will get back to you promptly.
         </p>
       </div>
     );
@@ -80,16 +84,18 @@ export function ContactForm() {
 
   if (status === 'fallback') {
     return (
-      <div role="status" className="py-10 text-center">
-        <h2 className="type-h3 text-ink">
+      <div role="status" className="rounded-3xl border-2 border-ink bg-[#ffedd5] p-8 text-center shadow-[4px_4px_0_0_rgb(var(--c-ink))] sm:p-12">
+        <h2 className="type-h2 text-ink font-bold">
           One more <span className="accent-word text-accent">click.</span>
         </h2>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
-          The form isn’t connected to email right now, so your message wasn’t sent. Open it in your mail app
-          instead — everything is pre-filled.
+        <p className="mx-auto mt-3 max-w-sm text-sm font-medium leading-relaxed text-soft">
+          Direct dispatch isn&apos;t active in this environment, so your message wasn&apos;t automatically sent. Open it directly in your default mail app instead — everything is pre-filled!
         </p>
-        <a href={mailto} className="btn-primary mt-6">
-          Open in mail app
+        <a
+          href={mailto}
+          className="btn-primary mt-6 inline-flex items-center gap-2 border-2 border-ink shadow-[4px_4px_0_0_rgb(var(--c-ink))] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgb(var(--c-ink))]"
+        >
+          <span>Open in mail app</span>
           <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </a>
       </div>
@@ -98,7 +104,7 @@ export function ContactForm() {
 
   const fieldError = (key: keyof ContactErrors) =>
     errors[key] ? (
-      <p id={`${key}-error`} className="mt-1.5 text-xs font-medium text-accent">
+      <p id={`${key}-error`} className="mt-1.5 font-mono text-xs font-semibold text-accent" role="alert">
         {errors[key]}
       </p>
     ) : null;
@@ -111,59 +117,72 @@ export function ContactForm() {
       aria-describedby={serverError ? 'form-error' : undefined}
     >
       <div>
-        <label htmlFor="name" className="eyebrow mb-1.5 block text-muted">
-          Name
+        <label htmlFor="name" className="mb-2 block font-mono text-xs font-bold uppercase tracking-wider text-ink">
+          Name <span className="text-accent">*</span>
         </label>
         <input
           id="name"
           name="name"
+          type="text"
           autoComplete="name"
+          required
           value={values.name}
           onChange={update('name')}
           maxLength={CONTACT_LIMITS.nameMax}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? 'name-error' : undefined}
-          className={cn(field, errors.name ? 'border-accent-2' : 'border-line')}
+          className={cn(fieldBase, errors.name ? 'border-accent bg-accent/5' : 'border-ink')}
           placeholder="Alex Morgan"
         />
         {fieldError('name')}
       </div>
+
       <div>
-        <label htmlFor="email" className="eyebrow mb-1.5 block text-muted">
-          Email
+        <label htmlFor="email" className="mb-2 block font-mono text-xs font-bold uppercase tracking-wider text-ink">
+          Email <span className="text-accent">*</span>
         </label>
         <input
           id="email"
           name="email"
           type="email"
           autoComplete="email"
+          required
           value={values.email}
           onChange={update('email')}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? 'email-error' : undefined}
-          className={cn(field, errors.email ? 'border-accent-2' : 'border-line')}
+          className={cn(fieldBase, errors.email ? 'border-accent bg-accent/5' : 'border-ink')}
           placeholder="alex@company.com"
         />
         {fieldError('email')}
       </div>
+
       <div>
-        <label htmlFor="message" className="eyebrow mb-1.5 block text-muted">
-          What would you like to talk about?
+        <label htmlFor="message" className="mb-2 block font-mono text-xs font-bold uppercase tracking-wider text-ink">
+          Message <span className="font-normal lowercase text-muted">(what would you like to talk about?)</span>{' '}
+          <span className="text-accent">*</span>
         </label>
         <textarea
           id="message"
           name="message"
           rows={5}
+          required
           value={values.message}
           onChange={update('message')}
           maxLength={CONTACT_LIMITS.messageMax}
           aria-invalid={!!errors.message}
           aria-describedby={errors.message ? 'message-error' : undefined}
-          className={cn(field, 'resize-y', errors.message ? 'border-accent-2' : 'border-line')}
-          placeholder="An internship or role, a project question, or anything else."
+          className={cn(
+            fieldBase,
+            'min-h-[140px] resize-y',
+            errors.message ? 'border-accent bg-accent/5' : 'border-ink',
+          )}
+          placeholder="Discussing an internship or engineering role, collaborating on a project, or exploring AI systems."
         />
         {fieldError('message')}
       </div>
+
+      {/* Honeypot field for bot protection */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 overflow-hidden">
         <label htmlFor="website">Website</label>
         <input
@@ -175,21 +194,32 @@ export function ContactForm() {
           onChange={update('website')}
         />
       </div>
+
       {serverError && (
-        <p id="form-error" role="alert" className="rounded-xl bg-raised px-4 py-3 text-sm text-accent">
+        <div id="form-error" role="alert" className="rounded-2xl border-2 border-accent bg-accent/10 p-4 font-mono text-xs font-medium text-accent">
           {serverError}{' '}
-          <a href={mailto} className="font-semibold underline">
-            Email me instead
+          <a href={mailto} className="font-bold underline ml-1">
+            Email directly instead →
           </a>
-        </p>
+        </div>
       )}
+
       <button
         type="submit"
         disabled={status === 'sending'}
-        className="btn-primary w-full disabled:opacity-60"
+        className="btn-primary w-full border-2 border-ink shadow-[4px_4px_0_0_rgb(var(--c-ink))] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgb(var(--c-ink))] active:translate-y-0.5 active:shadow-[2px_2px_0_0_rgb(var(--c-ink))] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <Send className="h-4 w-4" aria-hidden="true" />
-        {status === 'sending' ? 'Sending…' : 'Send message'}
+        {status === 'sending' ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            <span>Sending…</span>
+          </>
+        ) : (
+          <>
+            <Send className="h-4 w-4" aria-hidden="true" />
+            <span>Send message</span>
+          </>
+        )}
       </button>
     </form>
   );
