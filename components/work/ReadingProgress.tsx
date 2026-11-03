@@ -30,7 +30,7 @@ export function ReadingProgress({ targetId }: { targetId: string }) {
     <motion.div
       aria-hidden="true"
       style={{ scaleX }}
-      className="no-print fixed inset-x-0 top-[3px] z-[61] h-1 origin-left bg-indigo-500"
+      className="no-print fixed inset-x-0 top-0 z-[61] h-1 origin-left bg-accent"
     />
   );
 }

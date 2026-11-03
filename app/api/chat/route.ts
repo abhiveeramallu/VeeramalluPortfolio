@@ -75,7 +75,7 @@ export async function POST(req: Request) {
   if (looksLikeInjection(message)) {
     return new Response(
       cannedStream(
-        `I can only help with questions about ${SITE_CONFIG.shortName}'s work — projects, process, tools or availability.`,
+        `I can only help with questions about ${SITE_CONFIG.shortName}'s work — projects, skills or education.`,
         [],
       ),
       { headers: HEADERS },
@@ -119,7 +119,7 @@ export async function POST(req: Request) {
         }
         const final = await claude.finalMessage();
         if (final.stop_reason === 'refusal' && !full) {
-          full = `I can't help with that one, but I'm happy to answer questions about ${SITE_CONFIG.shortName}'s projects or availability.`;
+          full = `I can't help with that one, but I'm happy to answer questions about ${SITE_CONFIG.shortName}'s projects or skills.`;
           send({ type: 'delta', text: full });
         }
         const sources = detectSources(full);

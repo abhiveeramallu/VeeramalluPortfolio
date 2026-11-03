@@ -1,981 +1,973 @@
 /**
- * Single source of truth for every word on the site, the résumé PDF and the chat assistant's grounding.
+ * Single source of truth for every word on the site, the chat assistant's grounding and the résumé PDF.
  *
- * Editing rules:
- * - Any number that you have not personally verified carries a `// TODO: verify` comment. Remove the
- *   comment only once you can point at the source (analytics, test report, repo, letter).
- * - `placeholder: true` items never render in production (see components/home/Testimonials.tsx).
- * - Project images: drop files at /public/projects/<slug>/<media id>.webp and they replace the generated art.
+ * Honesty rules (see docs/DECISIONS.md):
+ * - Every project fact was read from that project's own GitHub repository (README, docs, reports, package
+ *   manifests) in November 2026. Numbers carry the repository file they came from in `facts`.
+ * - No invented users, clients, deployments, awards, team sizes or benchmarks. Synthetic or simulated data
+ *   is labelled as such, and weak results are reported as they are.
+ * - Every featured repository has a single contributor (checked via the GitHub API), so "contribution"
+ *   means designed and built end to end, solo.
  */
 
-export type ProjectCategory = 'Product Design' | 'Design Systems' | 'Creative Dev' | 'Brand Identity';
-export type Provenance = 'Shipped' | 'Prototype' | 'Self-initiated';
-export type ProjectArt = 'routes' | 'radar' | 'document' | 'climate' | 'tokens' | 'kinetic';
-export type SoftBg = 'pink' | 'blue' | 'yellow' | 'green' | 'purple';
+export type ProjectStatus = 'Live demo' | 'Working prototype' | 'Research prototype' | 'In development';
 
-export interface Metric {
+export type ProjectKind =
+  | 'Personal project'
+  | 'Academic project'
+  | 'Research prototype'
+  | 'Engineering project';
+
+/** Which 3D illustration represents the project (components/art/scenes.tsx). */
+export type IllustrationKind =
+  | 'city'
+  | 'radar'
+  | 'fracture'
+  | 'frames'
+  | 'network'
+  | 'board'
+  | 'greenhouse'
+  | 'sheets'
+  | 'racks';
+
+/** A number shown on the site, with the repository file it was copied from. */
+export interface Fact {
   label: string;
   value: string;
-  context?: string;
-}
-
-export interface MediaSlot {
-  /** File name (without extension) looked up at /public/projects/<slug>/<id>.webp */
-  id: string;
-  caption: string;
-  alt: string;
-}
-
-export type GalleryItem =
-  | ({ kind: 'image'; span: 'full' | 'half' | 'third' } & MediaSlot)
-  | { kind: 'before-after'; id: string; caption: string; beforeLabel: string; afterLabel: string }
-  | { kind: 'token-inspector'; id: string; caption: string };
-
-export interface Decision {
-  title: string;
-  chose: string;
-  over: string;
-  because: string;
+  source: string;
 }
 
 export interface ProjectItem {
   slug: string;
   title: string;
-  client?: string;
-  category: ProjectCategory;
-  provenance: Provenance;
-  year: string;
-  tagline: string;
-  description: string;
-  role: string;
-  team: string;
-  timeline: string;
-  tools: string[];
-  color: string;
-  softBg: SoftBg;
-  art: ProjectArt;
-  featured: boolean;
-  metrics: Metric[];
-  problem: string;
-  constraints: string[];
-  process: { step: string; detail: string; media?: MediaSlot }[];
-  decisions: Decision[];
-  solution: string;
-  gallery: GalleryItem[];
-  outcome: { summary: string; metrics: Metric[] };
-  retro: string[];
-  liveUrl?: string;
-  githubUrl?: string;
-}
-
-export interface Experiment {
-  slug: string;
-  title: string;
-  tagline: string;
-  kind: 'Browser game' | 'Tool' | 'Sound toy' | '3D toy' | 'Shader';
-  year: string;
-  color: string;
-  softBg: SoftBg;
-  howIBuiltIt: string[];
+  kind: ProjectKind;
+  category: string;
+  status: ProjectStatus;
+  /** Repository created → last push, from the GitHub API. */
+  period: string;
+  summary: string;
   stack: string[];
-  sourcePath: string;
-  isNew?: boolean;
+  illustration: IllustrationKind;
+  repoUrl: string;
+  liveUrl?: string;
+
+  overview: string;
+  problem: string;
+  whyItMatters: string;
+  goals: string[];
+  constraints: string[];
+  contribution: string;
+  architecture: { summary: string; flow: string[] };
+  implementation: { title: string; body: string }[];
+  decisions: { decision: string; because: string }[];
+  challenges: string[];
+  currentStatus: string;
+  facts: Fact[];
+  limitations: string[];
+  learned: string[];
 }
 
-export interface ProcessStep {
-  number: string;
-  title: string;
-  tagline: string;
+export interface ArchiveRepo {
+  name: string;
   description: string;
-  artifact: string;
+  stack: string;
+  url: string;
+  liveUrl?: string;
 }
 
 export interface TimelineEntry {
   period: string;
-  role: string;
-  company: string;
-  location: string;
+  title: string;
+  org: string;
   description: string;
-  highlights: string[];
 }
 
-export interface Testimonial {
-  quote: string;
-  name: string;
-  role: string;
-  /** Placeholders render only in development, with a visible "replace me" badge. */
-  placeholder: boolean;
-}
+const GH = 'https://github.com/abhiveeramallu';
 
 export const SITE_CONFIG = {
-  name: 'Sai Abhiram',
+  name: 'Veeramallu Sai Abhiram',
   shortName: 'Abhiram',
-  initials: 'SA',
+  displayName: 'ABHIRAM',
+  initials: 'VSA',
   brandName: 'abhiram.design',
-  role: 'Product Designer & Design Engineer',
-  location: 'Bengaluru, India',
+  role: 'Computer Science student & software engineer',
+  location: 'Vellore, India',
   timezone: 'Asia/Kolkata',
-  tagline: 'I design products and build them in code, so the details survive to production.',
+  tagline: 'I build AI systems, full-stack products and the odd thing that talks to hardware.',
   subline:
-    'Product designer and front-end engineer. I take messy, algorithm-heavy problems — dispatch, fraud signals, private AI — and turn them into interfaces people understand in one glance.',
-  status: 'Available for full-time roles',
-  availability: 'from January 2027', // TODO: verify start date
-  email: 'hello@abhiram.design', // TODO: verify this inbox receives mail
-  bookingUrl: '', // Add a Cal.com / Calendly link to turn the secondary hero CTA into "Book a call".
+    'Computer Science student at VIT Vellore, graduating in 2027. I work across machine learning, full-stack engineering, security and embedded systems — and I document what my projects can and cannot do.',
+  status: 'Expected graduation 2027',
+  /** The address on my public GitHub commits. */
+  email: 'abhiram97137@gmail.com',
 
   socials: {
-    linkedin: 'https://linkedin.com/in/abhiramveeramallu',
-    github: 'https://github.com/abhiveeramallu',
-    behance: 'https://behance.net/abhiramdesign', // TODO: verify profile exists
+    github: GH,
+    /** Empty until the profile URL is confirmed; empty links are never rendered. */
+    linkedin: '',
   },
 
-  heroStats: [
-    { value: '3+', label: 'years designing & shipping in code' }, // TODO: verify (freelance since 2022)
-    { value: '6', label: 'products taken from research to build' },
-    { value: '<120ms', label: 'p95 match time I designed around in RouteFusion' }, // TODO: verify
-  ] as Metric[],
-
-  /** Shown in the "Currently building" ticker under the hero (no client logos yet — this is honest). */
-  currentlyBuilding: [
-    'RouteFusion v2 — live driver heat-maps', // TODO: verify
-    'A GLSL playground for this site',
-    'Figma variables → Tailwind token sync',
-    'ThreatLens: replay mode for analysts', // TODO: verify
-    'Reading: “Inclusive Components”',
+  interests: [
+    'Machine learning systems',
+    'Full-stack engineering',
+    'Security engineering',
+    'Embedded & edge AI',
   ],
 
-  heroTransliterations: ['ABHIRAM', 'अभिराम', 'アビラム', '아비람', 'அபிராம்', 'అభిరామ్', 'অভিরাম'],
-
-  tools: [
-    { name: 'Figma', category: 'Design' },
-    { name: 'Framer', category: 'Prototyping' },
-    { name: 'React / Next.js', category: 'Engineering' },
-    { name: 'TypeScript', category: 'Engineering' },
-    { name: 'Three.js / R3F', category: '3D & WebGL' },
-    { name: 'Tailwind CSS', category: 'Styling' },
-    { name: 'Python / FastAPI', category: 'Back-end' },
-    { name: 'Claude API', category: 'AI prototyping' },
+  /** Every item is used in at least one repository below. */
+  skills: [
+    { group: 'Languages', items: ['Python', 'TypeScript', 'JavaScript', 'SQL'] },
+    {
+      group: 'Machine learning',
+      items: ['PyTorch', 'scikit-learn', 'XGBoost', 'SHAP', 'Pandas · NumPy', 'Ollama'],
+    },
+    { group: 'Computer vision', items: ['OpenCV', 'PyWavelets', 'YOLOv8'] },
+    {
+      group: 'Back end',
+      items: ['FastAPI', 'Express', 'SQLAlchemy 2.0', 'PostgreSQL', 'SQLite', 'JWT auth'],
+    },
+    {
+      group: 'Front end',
+      items: ['React', 'Next.js', 'Vite', 'Tailwind CSS', 'Three.js · R3F', 'Framer Motion'],
+    },
+    {
+      group: 'Quality',
+      items: ['Pytest', 'Jest · Supertest', 'Vitest', 'Playwright', 'Docker Compose', 'GitHub Actions'],
+    },
+    { group: 'Embedded', items: ['STM32 Nucleo-F446RE', 'UART · pyserial', 'PWM control'] },
   ],
 
-  skillsRow1: [
-    'Product design',
-    'Design systems',
-    'Design engineering',
-    'Three.js & WebGL',
-    'Motion design',
-    'Prototyping in code',
-    'Next.js App Router',
-    'Data-dense UI',
+  /** Areas named on the about page; each maps to repositories below. */
+  focus: [
+    {
+      code: 'ML',
+      title: 'Intelligent systems',
+      body: 'Classifiers, forecasters and retrieval pipelines, evaluated against baselines and published with their caveats.',
+    },
+    {
+      code: 'FS',
+      title: 'Full-stack products',
+      body: 'FastAPI, Express and React applications with real auth, persistence, concurrency control and tests.',
+    },
+    {
+      code: 'SEC',
+      title: 'Security engineering',
+      body: 'Bot detection, honeypot analysis and image forensics, with threat models and measured failure cases.',
+    },
+    {
+      code: 'EDGE',
+      title: 'Edge & embedded',
+      body: 'Host-side forecasting that drives an STM32 microcontroller over UART to control a cooling fan.',
+    },
   ],
-  skillsRow2: [
-    'User research',
-    'Information architecture',
-    'Design tokens',
-    'Accessibility (WCAG 2.2 AA)',
-    'FastAPI',
-    'LLM product UX',
-    'Usability testing',
-    'Shipping',
-  ],
-
-  processSteps: [
-    {
-      number: '01',
-      title: 'Research',
-      tagline: 'Find the real problem behind the brief',
-      description:
-        'Ride-alongs, interviews and log reading. I look for the moment people hesitate — that is where the product is.',
-      artifact: 'Field notes + a one-page problem statement',
-    },
-    {
-      number: '02',
-      title: 'Frame',
-      tagline: 'Agree on what “better” means',
-      description:
-        'Jobs-to-be-done, constraints and one success metric per flow, written down before I draw a rectangle.',
-      artifact: 'Success metrics + design principles',
-    },
-    {
-      number: '03',
-      title: 'Sketch',
-      tagline: 'Test structure while it is cheap',
-      description: 'Paper and grey boxes. I put the riskiest flow in front of a user in the first week.',
-      artifact: 'Low-fi flows tested with 3–5 people',
-    },
-    {
-      number: '04',
-      title: 'System',
-      tagline: 'Tokens before screens',
-      description:
-        'Colour, type and spacing as tokens with contrast checks in CI, so the tenth screen is as consistent as the first.',
-      artifact: 'Token set + core components',
-    },
-    {
-      number: '05',
-      title: 'Prototype',
-      tagline: 'Build it in the real medium',
-      description:
-        'React prototypes with real data and real latency. Springs, states and errors are designed, not left to chance.',
-      artifact: 'Coded prototype on a shareable URL',
-    },
-    {
-      number: '06',
-      title: 'Ship',
-      tagline: 'Measure, then polish',
-      description:
-        'I pair on the production build, check performance and accessibility budgets, and iterate on what the numbers say.',
-      artifact: 'Release + a short metrics readout',
-    },
-  ] as ProcessStep[],
 
   projects: [
     {
       slug: 'routefusion',
       title: 'RouteFusion',
-      client: 'University engineering showcase',
-      category: 'Product Design',
-      provenance: 'Shipped',
-      year: '2024',
-      tagline: 'One dispatch screen for rides and parcels, matched in under 120 ms.',
-      description:
-        'A dispatch platform that pools passenger rides with parcel deliveries on the same route. I designed the driver and operator experience and built the front end.',
-      role: 'Product designer & front-end lead',
-      team: '4 people: me, 2 back-end engineers, 1 ML engineer', // TODO: verify
-      timeline: '4 months',
-      tools: ['Figma', 'Next.js', 'TypeScript', 'Mapbox', 'FastAPI'],
-      color: '#FF5A1F',
-      softBg: 'yellow',
-      art: 'routes',
-      featured: true,
-      metrics: [
-        { label: 'Match time', value: '<120ms', context: 'p95, simulated load' }, // TODO: verify
-        { label: 'Empty kilometres', value: '−28%', context: '1,400-trip simulation' }, // TODO: verify
-        { label: 'Taps to accept a pooled job', value: '3', context: 'down from 7' }, // TODO: verify
+      kind: 'Personal project',
+      category: 'Full-stack · Optimisation',
+      status: 'Live demo',
+      period: 'Jul – Sep 2026',
+      summary:
+        'Combines a passenger ride and a parcel delivery into one trip, using a from-scratch Hungarian (Kuhn–Munkres) assignment solver and explaining every recommendation.',
+      stack: [
+        'FastAPI',
+        'SQLAlchemy 2.0',
+        'React',
+        'TypeScript',
+        'Vite',
+        'Tailwind CSS',
+        'PostgreSQL / SQLite',
+        'JWT',
       ],
+      illustration: 'city',
+      repoUrl: `${GH}/RouteFusion`,
+      liveUrl: 'https://route-fusion.vercel.app',
+      overview:
+        'A captain (driver) sees one recommendation — accept both, accept just the ride, accept just the parcel, or reject — together with the constraints that passed or failed. The back end decides with an optimal-assignment algorithm rather than a heuristic score.',
       problem:
-        'Couriers and ride-hail drivers cover the same corridors with empty seats and empty boots. Pooling them needs a matching engine — and a driver screen that explains a combined pickup-and-drop route in a two-second glance at 40 km/h.',
-      constraints: [
-        'Drivers glance, they do not read: every decision had to fit a 2-second look.',
-        'Matching re-runs whenever a request lands, so the UI could never assume a stable plan.',
-        'Phones mounted in direct sunlight, used one-handed.',
-        'Four months, four students, no production fleet to test on.',
+        'A driver carrying a passenger often passes parcel pickups. Bundling the two saves distance only if the detour is small, the passenger is not delayed, and two drivers cannot claim the same job at the same moment.',
+      whyItMatters:
+        'Matching drivers to rides and parcels is a three-dimensional assignment problem, NP-hard in general. A dispatcher still has to answer quickly, explain itself, and stay correct under concurrent accepts.',
+      goals: [
+        'Recommend accept-both only when it is genuinely efficient, and show why.',
+        'Use an exact assignment algorithm where the problem allows one.',
+        'Guarantee that only one captain can win a contested ride or parcel.',
       ],
-      process: [
+      constraints: [
+        'Demo-first: runs with no external database (transient in-memory SQLite); PostgreSQL is supported for persistence.',
+        'Thresholds are defined once in the back end and sent to the UI, which never recomputes them.',
+      ],
+      contribution:
+        'Sole author: data model, two-stage assignment engine, concurrency control, REST API, React front end and the architecture documentation.',
+      architecture: {
+        summary:
+          'Monorepo: a React + Vite SPA and a FastAPI back end over a JSON REST API with JWT auth (access, refresh and a revocation blacklist).',
+        flow: [
+          'React pages talk only to one shared RouteFusionContext',
+          'FastAPI routes: auth · ride · parcel · captain · dashboard · demo',
+          'Services: assignment_engine · hungarian · spatial_grid · route_optimizer · concurrency · pricing',
+          'SQLite (in-memory by default) or PostgreSQL via SQLAlchemy 2.0 + Alembic',
+        ],
+      },
+      implementation: [
         {
-          step: 'Ride-alongs',
-          detail:
-            'I rode with couriers for two weekends and timed how long they looked at their phones. Median glance: 1.8 s. That number became the design budget.', // TODO: verify
-          media: {
-            id: 'process-1',
-            caption: 'Glance-time notes from the ride-alongs',
-            alt: 'Notebook sketch of glance timings per screen',
-          },
+          title: 'Two-stage Hungarian assignment',
+          body: 'The driver × ride × parcel problem is split into two 2-D problems, each solved optimally by a hand-written O(n³) Kuhn–Munkres implementation: drivers × rides by haversine pickup distance, then (driver, ride) × parcels by the cheapest extra distance over the six valid stop orderings.',
         },
         {
-          step: 'Mapbox prototype',
-          detail:
-            'Built a clickable React + Mapbox prototype fed by a surge simulator so we could feel what a re-plan does to the screen mid-drive.',
-          media: {
-            id: 'process-2',
-            caption: 'Surge simulator driving the prototype',
-            alt: 'Map with simulated orders appearing in bursts',
-          },
+          title: 'Explainable accept-both rule',
+          body: 'Accept-both requires efficiency ≥ 75, extra time ≤ 12 minutes and passenger delay ≤ 3 km; otherwise the optimizer considers passenger-first or parcel-first (≥ 55%) or rejects. Every constraint is returned with its actual value and pass/fail state.',
         },
         {
-          step: 'Explaining the match',
-          detail:
-            'The Hungarian matcher is optimal but opaque. I visualised each assignment as a single coloured corridor so drivers see “why me” without numbers.',
-          media: {
-            id: 'process-3',
-            caption: 'Corridor view: one colour per matched job',
-            alt: 'Route corridors drawn in orange and indigo',
-          },
+          title: 'Optimistic locking',
+          body: "Claims use a conditional UPDATE … WHERE status='open' AND version=n. Zero rows affected returns 409 instead of double-booking, and accept-both rolls back the ride claim if the parcel claim fails.",
         },
         {
-          step: 'Daylight tokens',
-          detail:
-            'A high-contrast daylight palette with every text pair at WCAG AA or better, checked in CI.',
+          title: 'Per-captain broadcast',
+          body: "Each captain's recommendation is computed independently (nearest suitable ride within 15 km, then the cheapest parcel to bundle), so several captains can be offered the same job; the fleet-wide Hungarian solve powers the dashboard's optimal-vs-greedy analytics.",
         },
       ],
       decisions: [
         {
-          title: 'One route, not two jobs',
-          chose: 'A single merged route with stops in order',
-          over: 'Separate ride and parcel cards',
+          decision: 'Decompose into two sequential optimal assignments.',
           because:
-            'Two cards meant drivers had to merge them mentally. Merged routes cut accept time in hallway tests.', // TODO: verify
+            'Each stage stays exact and tractable; the README documents that the result is optimal within each stage but not guaranteed globally optimal.',
         },
         {
-          title: 'Batch matching every 2 s',
-          chose: 'Hungarian assignment over small time batches',
-          over: 'Greedy nearest-driver',
+          decision: 'Optimistic locking with a version column instead of SELECT … FOR UPDATE.',
           because:
-            'Greedy stranded far parcels. Batching costs up to 2 s of latency, which we hid behind the accept animation.',
+            'It needs only an atomic conditional update, so it behaves the same on SQLite and PostgreSQL.',
         },
         {
-          title: 'Daylight-first map',
-          chose: 'Light basemap with heavy route strokes',
-          over: 'The fashionable dark map',
-          because: 'Dark maps wash out in sunlight. Drivers picked the light version 9 times out of 10.', // TODO: verify
+          decision: 'Spatial-grid pruning is reported, not enforced.',
+          because:
+            'At the demo cap of 200 candidates an exhaustive cost matrix is cheap, and excluding candidates could silently miss the optimum.',
         },
       ],
-      solution:
-        'A driver app that shows one route with numbered stops, a 3-tap accept flow, and an operator canvas where corridors light up as the matcher assigns them.',
-      gallery: [
-        {
-          kind: 'image',
-          id: 'gallery-1',
-          span: 'full',
-          caption: 'Operator canvas during a simulated rush hour',
-          alt: 'Dispatch map with dozens of coloured route corridors',
-        },
-        {
-          kind: 'before-after',
-          id: 'accept-flow',
-          caption: 'Accept flow: v1 (7 taps) → v3 (3 taps)',
-          beforeLabel: 'v1 · two cards',
-          afterLabel: 'v3 · merged route',
-        },
-        {
-          kind: 'image',
-          id: 'gallery-2',
-          span: 'half',
-          caption: 'Driver view, mounted',
-          alt: 'Phone showing a merged route with three stops',
-        },
-        {
-          kind: 'image',
-          id: 'gallery-3',
-          span: 'half',
-          caption: 'Stop list with pickup and drop types',
-          alt: 'List of stops with passenger and parcel icons',
-        },
+      challenges: [
+        'Mixed-decision races, e.g. one captain accepting a bundle while another accepts the same parcel alone.',
+        "Thread safety of one shared in-memory SQLite connection under FastAPI's thread pool, solved by serialising sessions behind a lock on SQLite only.",
       ],
-      outcome: {
-        summary:
-          'RouteFusion won the university engineering showcase and ran 1,400 simulated fleet journeys. The live demo is public.', // TODO: verify
-        metrics: [
-          { label: 'Delivery cost per trip', value: '−22%', context: 'vs. unpooled baseline, simulated' }, // TODO: verify
-          { label: 'Empty kilometres', value: '−28%' }, // TODO: verify
-          { label: 'Showcase result', value: '1st place' }, // TODO: verify
-        ],
-      },
-      retro: [
-        'Test on real roads earlier — the simulator was too kind about GPS drift.',
-        'Instrument the accept flow from day one instead of reconstructing timings from logs.',
+      currentStatus:
+        'Deployed as a public demo. A /demo/stress/concurrency endpoint fires simultaneous accepts at one ride and reports one success and N conflicts.',
+      facts: [
+        {
+          label: 'Accept-both thresholds',
+          value: '≥75 · ≤12 min · ≤3 km',
+          source: 'README.md · Core workflows',
+        },
+        { label: 'Pickup suitability cap', value: '15 km', source: 'README.md · System design' },
+        { label: 'Stop orderings evaluated', value: '6', source: 'README.md · System design' },
       ],
-      liveUrl: 'https://route-fusion.vercel.app/',
-      githubUrl: 'https://github.com/abhiveeramallu/RouteFusion',
+      limitations: [
+        'The two-stage decomposition is not guaranteed to be globally optimal.',
+        'Runs on seeded demo data (named captains around Vellore), not real fleet traffic; no production performance is claimed.',
+      ],
+      learned: [
+        'Separating "what one driver sees" from "what an optimal fleet would do" kept both the UX and the analytics honest.',
+        'Concurrency fixes are easiest to trust when the app can stress-test itself on demand.',
+      ],
     },
     {
       slug: 'threatlens-ai',
-      title: 'ThreatLens AI',
-      client: 'Research prototype',
-      category: 'Creative Dev',
-      provenance: 'Prototype',
-      year: '2024',
-      tagline: 'Bot detection that never shows a human a CAPTCHA.',
-      description:
-        'A behavioural bot-detection prototype that scores pointer movement, timing and headers invisibly, plus an analyst console that makes the model’s reasoning visible.',
-      role: 'Design engineer',
-      team: '3 people; I owned the console and the signal visualisations', // TODO: verify
-      timeline: '3 months',
-      tools: ['Figma', 'React', 'Three.js', 'Node.js', 'Python', 'XGBoost'],
-      color: '#5B5BFF',
-      softBg: 'blue',
-      art: 'radar',
-      featured: true,
-      metrics: [
-        { label: 'Classification accuracy', value: '99.1%', context: 'held-out test set' }, // TODO: verify
-        { label: 'Scoring time', value: '14ms', context: 'per session, server-side' }, // TODO: verify
-        { label: 'Challenges shown to humans', value: '0', context: 'in the test cohort' }, // TODO: verify
+      title: 'ThreatLensAI',
+      kind: 'Personal project',
+      category: 'Security · Machine learning',
+      status: 'Live demo',
+      period: 'Jun – Sep 2026',
+      summary:
+        'Bot-detection and threat-intelligence platform that scores logins with a rule engine and a trained classifier side by side — and publishes its own measured evasion rate.',
+      stack: [
+        'Node.js',
+        'Express',
+        'scikit-learn',
+        'XGBoost',
+        'SHAP',
+        'Gemini API',
+        'PostgreSQL',
+        'Docker Compose',
+        'Jest',
       ],
+      illustration: 'radar',
+      repoUrl: `${GH}/ThreatlensAI`,
+      liveUrl: 'https://threatlensai-atzs.onrender.com/',
+      overview:
+        'Detects suspicious login activity from timing, typing, mouse and browser-fingerprint signals, applies an adaptive response (allow, CAPTCHA, OTP or block), and writes an analyst-style report.',
       problem:
-        'CAPTCHAs tax every real visitor to stop a few bots, and modern headless browsers solve them anyway. Analysts also had no way to see why a session was flagged.',
+        'Automated logins from Selenium, Playwright and Puppeteer look human at the HTTP level. A binary allow/deny check either blocks real people or lets scripted sessions through.',
+      whyItMatters:
+        'Credential stuffing and scripted sign-ups are routine; a useful detector has to explain its score and be honest about how easily it can be evaded.',
+      goals: [
+        'Score each session 0–100 with a threat level and explainability signals.',
+        'Compare a hand-written rule engine with a trained model instead of silently swapping one for the other.',
+        'Measure evasion with real automation tools and publish the result.',
+      ],
       constraints: [
-        'No visible challenge for humans — detection had to be invisible.',
-        'Analysts triage hundreds of sessions an hour, so the console had to be dense but calm.',
-        'Model features are numeric vectors; the UI had to make them legible to non-ML people.',
+        'No real user data was available, so human sessions are synthetic — disclosed in ml/README.md.',
+        'Must keep working when the Gemini key or the ML service is unavailable (local fallback report).',
       ],
-      process: [
-        {
-          step: 'Signal mapping',
-          detail:
-            'Interviewed two security analysts about their triage routine and mapped which signals they actually trust.', // TODO: verify
-          media: {
-            id: 'process-1',
-            caption: 'Signals analysts trust, ranked',
-            alt: 'Card sort of detection signals',
-          },
-        },
-        {
-          step: 'Visualising pointer paths',
-          detail:
-            'Plotted real vs. scripted pointer paths. Bots move in straight lines at constant speed — the picture explains the model better than any score.',
-          media: {
-            id: 'process-2',
-            caption: 'Human curve vs. scripted line',
-            alt: 'Two pointer traces, one curved, one straight',
-          },
-        },
-        {
-          step: 'Console system',
-          detail:
-            'A compact component set: monospace tables, three status colours, and nothing else that blinks.',
-        },
-      ],
-      decisions: [
-        {
-          title: 'Explain, then score',
-          chose: 'Show the top three signals before the risk score',
-          over: 'A single 0–100 risk number',
-          because: 'Analysts overrode bare scores constantly; with reasons attached they trusted the call.',
-        },
-        {
-          title: '3D radar kept small',
-          chose: 'A small Three.js radar as an overview only',
-          over: 'A full-screen 3D view',
-          because: 'It looked great in demos and slowed real triage down. 3D earned a corner, not the page.',
-        },
-      ],
-      solution:
-        'An invisible client-side sensor feeding an XGBoost classifier, and an analyst console that pairs every verdict with the pointer trace and the signals behind it.',
-      gallery: [
-        {
-          kind: 'image',
-          id: 'gallery-1',
-          span: 'full',
-          caption: 'Analyst console with live session stream',
-          alt: 'Dark console with session table and radar',
-        },
-        {
-          kind: 'before-after',
-          id: 'challenge',
-          caption: 'From challenge wall to invisible check',
-          beforeLabel: 'Before · CAPTCHA',
-          afterLabel: 'After · invisible',
-        },
-        {
-          kind: 'image',
-          id: 'gallery-2',
-          span: 'half',
-          caption: 'Pointer-trace inspector',
-          alt: 'Pointer path with speed colouring',
-        },
-        {
-          kind: 'image',
-          id: 'gallery-3',
-          span: 'half',
-          caption: 'Signal breakdown for one session',
-          alt: 'Bar list of signal contributions',
-        },
-      ],
-      outcome: {
+      contribution:
+        'Sole author: rule engine, ML pipeline, adaptive response, Gemini analyst layer with an evidence guardrail, STRIDE threat model, tests, CI and Docker setup.',
+      architecture: {
         summary:
-          'A working prototype with a reproducible evaluation in the repo. Humans in the test cohort never saw a challenge.', // TODO: verify
-        metrics: [
-          { label: 'Accuracy', value: '99.1%' }, // TODO: verify
-          { label: 'False positives', value: '0.4%' }, // TODO: verify
-          { label: 'Median scoring', value: '14ms' }, // TODO: verify
+          'Express back end with a rule-based scorer; an optional Python ml/serve.py service returns a second score; Docker Compose wires the app to PostgreSQL and the ML service.',
+        flow: [
+          'Browser telemetry: timing, typing cadence, mouse movement, WebDriver markers',
+          'Rule engine (weighted heuristics) ‖ ML scorer (logistic regression / XGBoost)',
+          'Adaptive response: ALLOW_ACCESS · SHOW_CAPTCHA · REQUIRE_OTP · BLOCK_SESSION',
+          'Gemini analyst report with an evidence guardrail, or a local fallback template',
         ],
       },
-      retro: [
-        'I would test the console with analysts weekly, not just at the start.',
-        'The 3D radar took a week I should have spent on keyboard shortcuts.',
-      ],
-      githubUrl: 'https://github.com/abhiveeramallu/ThreatlensAI',
-    },
-    {
-      slug: 'smart-document-ai',
-      title: 'DocuSense AI',
-      client: 'Self-initiated',
-      category: 'Product Design',
-      provenance: 'Prototype',
-      year: '2024',
-      tagline: 'Ask questions about private contracts without a single byte leaving the laptop.',
-      description:
-        'A document reader that answers questions about PDFs using a local LLM (Ollama) and highlights the exact clause it relied on.',
-      role: 'Product designer & full-stack prototyper',
-      team: 'Solo',
-      timeline: '2 months',
-      tools: ['Figma', 'React', 'FastAPI', 'Ollama', 'Tailwind CSS'],
-      color: '#8FB30A',
-      softBg: 'green',
-      art: 'document',
-      featured: true,
-      metrics: [
-        { label: 'Data sent to the cloud', value: '0 bytes', context: 'runs fully offline' },
-        { label: 'Median answer time', value: '1.4s', context: 'M1 laptop, 8B model' }, // TODO: verify
-        { label: 'Answers with a source citation', value: '100%' },
-      ],
-      problem:
-        'People reviewing leases, NDAs and offer letters can’t paste them into cloud chatbots — and when an AI does answer, they can’t tell which clause it read.',
-      constraints: [
-        'Everything local: no API calls, no telemetry.',
-        'Small local models are slower and less accurate, so the UI had to make uncertainty visible.',
-        'Readers must be able to verify every answer in one click.',
-      ],
-      process: [
+      implementation: [
         {
-          step: 'Watching people read contracts',
-          detail:
-            'I watched classmates review their internship offer letters. Everyone used Ctrl+F and still missed clauses.', // TODO: verify
-          media: {
-            id: 'process-1',
-            caption: 'Where readers lost their place',
-            alt: 'Annotated contract page',
-          },
+          title: 'Signals',
+          body: 'WebDriver and headless markers, automation-framework fingerprints, suspicious user agents, mouse-movement scarcity, rapid submission timing, typing cadence and honeypot-trap interactions.',
         },
         {
-          step: 'Citations as anchors',
-          detail:
-            'Every answer links to a bounding box in the source PDF; clicking it scrolls and flashes the clause.',
-          media: {
-            id: 'process-2',
-            caption: 'Answer → clause anchor',
-            alt: 'Split screen with linked highlight',
-          },
+          title: 'Rule engine vs. trained model',
+          body: 'A logistic-regression baseline and an XGBoost classifier trained with a stratified split and SHAP artifacts; both scores appear side by side in the analyst panel and the session log.',
+        },
+        {
+          title: 'LLM evaluation harness',
+          body: 'An automated rubric checks generated threat reports and flags claims that reference signals not present in the input; runs that only exercised the fallback template are disclosed as such.',
+        },
+        {
+          title: 'Adversarial test',
+          body: 'Real Selenium, Playwright and Puppeteer sessions, plus puppeteer-extra-plugin-stealth to measure how often a public evasion tool gets through.',
         },
       ],
       decisions: [
         {
-          title: 'Split screen, always',
-          chose: 'Document and answers side by side',
-          over: 'A chat-first layout',
-          because: 'The document is the source of truth; chat is the index into it.',
+          decision: 'Keep the rule engine and the ML model side by side.',
+          because:
+            'A documented comparison is more useful than a swap when the training data is small and partly synthetic.',
         },
         {
-          title: 'Local model, honest speed',
-          chose: 'Stream tokens with a visible “reading pages 3–5” status',
-          over: 'A spinner',
-          because: 'At 1–2 s per answer, showing what the model is doing made the wait feel shorter.',
+          decision: 'Publish the bad number.',
+          because: 'ADVERSARIAL_TEST.md reports the measured stealth-evasion rate instead of hiding it.',
         },
       ],
-      solution:
-        'A calm, editorial reader with linked citations, table-to-JSON export, and a local-model status bar that shows exactly what is running.',
-      gallery: [
+      challenges: [
+        'A perfect score on a small, easily separable dataset proves little; METRICS.md carries that caveat.',
+        'Keeping the threat model current: admin authentication was built and later removed for local-demo convenience, and THREAT_MODEL.md says so.',
+      ],
+      currentStatus:
+        'Deployed as a public demo on Render. The admin dashboard is currently not behind authentication, as documented in THREAT_MODEL.md.',
+      facts: [
+        { label: 'Stealth-plugin evasion rate', value: '50% (4 of 8)', source: 'ADVERSARIAL_TEST.md' },
+        { label: 'ML evaluation dataset', value: '105 sessions', source: 'METRICS.md' },
         {
-          kind: 'image',
-          id: 'gallery-1',
-          span: 'full',
-          caption: 'Reader with linked citation',
-          alt: 'Contract on the left, answer with highlight on the right',
-        },
-        {
-          kind: 'image',
-          id: 'gallery-2',
-          span: 'half',
-          caption: 'Table extraction',
-          alt: 'PDF table converted into JSON',
-        },
-        {
-          kind: 'image',
-          id: 'gallery-3',
-          span: 'half',
-          caption: 'Local model status',
-          alt: 'Status bar reading model name and memory',
+          label: 'Held-out precision / recall',
+          value: '1.000 (small, separable data)',
+          source: 'METRICS.md',
         },
       ],
-      outcome: {
+      limitations: [
+        'Human sessions are synthetic; scores on 105 sessions do not predict real-world accuracy.',
+        'Half of the stealth-plugin sessions evaded detection in the adversarial test.',
+        'Admin authentication is currently removed.',
+      ],
+      learned: [
+        'An evaluation harness is part of an LLM feature, not an afterthought.',
+        'Red-teaming your own detector produces the number that actually matters.',
+      ],
+    },
+    {
+      slug: 'imageguard',
+      title: 'ImageGuard',
+      kind: 'Personal project',
+      category: 'Computer vision · Security',
+      status: 'Working prototype',
+      period: 'Oct 2026',
+      summary:
+        'Image-integrity platform: classical forgery screening (ORB copy-move, Error Level Analysis, wavelet noise residuals) plus visible and invisible DCT watermarking with HMAC-signed payloads.',
+      stack: [
+        'FastAPI',
+        'OpenCV',
+        'PyWavelets',
+        'NumPy',
+        'React',
+        'TypeScript',
+        'Vite',
+        'Tailwind CSS',
+        'Pytest',
+        'Vitest',
+      ],
+      illustration: 'fracture',
+      repoUrl: `${GH}/Image_Guard`,
+      overview:
+        'A forgery-detection suite and a watermark studio in one app. Detection highlights candidate regions for a person to review; watermarking embeds provenance that can be verified later.',
+      problem:
+        'Copy-move and splicing edits are easy to make and hard to spot, and ownership metadata disappears the moment an image is re-saved.',
+      whyItMatters:
+        'Screening tools tell an analyst where to look, and a signed, embedded payload survives where EXIF metadata does not.',
+      goals: [
+        'Detect cloned regions within one image and spliced regions from another source.',
+        'Embed and verify an invisible, signed provenance payload.',
+        'Be explicit that results are screening indicators, not forensic proof.',
+      ],
+      constraints: [
+        'Classical computer vision only — no trained forgery model — so every result is explainable.',
+        'Upload limits of 10 MB and 16 MP, enforced before processing.',
+      ],
+      contribution:
+        'Sole author: detection services, watermarking services, REST API, React front end, evaluation scripts and tests.',
+      architecture: {
         summary:
-          'In hallway tests people found the relevant clause faster than with Ctrl+F, and trusted answers more because they could check them.', // TODO: verify
-        metrics: [
-          { label: 'Time to find a clause', value: '−60%', context: 'vs. Ctrl+F, n=5' }, // TODO: verify
-          { label: 'Cloud calls', value: '0' },
+          'Stateless FastAPI back end with an in-memory LRU artifact store; React + TypeScript SPA with detection, watermark and how-it-works pages.',
+        flow: [
+          'Upload → payload and dimension validation',
+          'Copy-move: ORB → Hamming matching → DBSCAN clustering → affine RANSAC',
+          'Splicing: JPEG ELA (q=95) + db2 wavelet noise residuals (MAD z-scores)',
+          'Watermarks: visible compositing, or 8×8 DCT-QIM embedding signed with HMAC-SHA256',
         ],
       },
-      retro: ['I’d run a proper usability study with more than five people before claiming the speed-up.'],
-      githubUrl: 'https://github.com/abhiveeramallu', // TODO: link the specific repository
-    },
-    {
-      slug: 'greenhouse-telemetry',
-      title: 'Aura Flora',
-      client: 'Self-initiated',
-      category: 'Design Systems',
-      provenance: 'Self-initiated',
-      year: '2024',
-      tagline: 'A greenhouse dashboard that warns growers 12 hours before frost.',
-      description:
-        'Micro-climate forecasting (GRU vs. BiLSTM) paired with a dashboard whose colour system maps directly to plant comfort.',
-      role: 'Lead UI/UX & creative technologist',
-      team: '2 people; I owned the design system and front end', // TODO: verify
-      timeline: '3 months',
-      tools: ['Figma', 'Python', 'GRU / BiLSTM', 'Next.js', 'Chart.js'],
-      color: '#FF5A1F',
-      softBg: 'pink',
-      art: 'climate',
-      featured: true,
-      metrics: [
-        { label: 'Forecast horizon', value: '12h' },
-        { label: 'Forecast error', value: '0.6°C', context: 'MAE, GRU, test split' }, // TODO: verify
-        { label: 'Earlier vent actions', value: '4h', context: 'replayed 2023 data' }, // TODO: verify
-      ],
-      problem:
-        'Greenhouses react after the temperature has already spiked or dropped, stressing crops and burning energy on emergency heating.',
-      constraints: [
-        'Growers check the dashboard on a phone in the greenhouse — gloves, glare, no patience.',
-        'Forecasts are uncertain; the UI had to show confidence without a statistics lesson.',
-      ],
-      process: [
+      implementation: [
         {
-          step: 'Comfort-band colour tokens',
-          detail:
-            'A temperature scale from cool mint to warm apricot, where the colour itself tells you if plants are comfortable.',
-          media: {
-            id: 'process-1',
-            caption: 'Comfort-band token scale',
-            alt: 'Gradient swatches from mint to apricot',
-          },
+          title: 'Copy-move detection',
+          body: 'ORB keypoints matched as mutual nearest neighbours, background textures filtered, clusters segmented with DBSCAN, and affine RANSAC used to discard spurious matches from repetitive textures.',
         },
         {
-          step: 'Confidence bands',
-          detail: 'Layered forecast bands that widen with uncertainty, tested against a plain line chart.',
+          title: 'Splicing screening',
+          body: 'Error Level Analysis re-compresses at JPEG quality 95 and compares per channel; Daubechies (db2) wavelet residuals estimate local noise variance to reveal regions with a different sensor-noise footprint.',
+        },
+        {
+          title: 'Invisible watermark',
+          body: 'Owner ID, asset ID, permissions and a timestamp are signed with HMAC-SHA256 and embedded into mid-frequency luminance DCT coefficients with quantisation index modulation; verification reports PSNR, SSIM, NCC and bit-error rate.',
         },
       ],
       decisions: [
         {
-          title: 'Semantic colour over raw degrees',
-          chose: 'Tokens named by plant comfort (too-cold → ideal → too-hot)',
-          over: 'A generic blue-to-red heat scale',
-          because: 'Growers act on “is this OK?”, not on a number.',
+          decision: 'Report clean / inconclusive / candidate regions found.',
+          because:
+            'Heuristics produce indicators; a three-state result avoids implying certainty the methods cannot give.',
         },
-      ],
-      solution:
-        'A dashboard with comfort-coloured zones, a 12-hour forecast with confidence bands, and threshold sliders that schedule vents ahead of weather fronts.',
-      gallery: [
         {
-          kind: 'image',
-          id: 'gallery-1',
-          span: 'full',
-          caption: 'Zone overview at dawn',
-          alt: 'Dashboard with greenhouse zones coloured by comfort',
+          decision: 'Sign the embedded payload.',
+          because:
+            'A CRC detects corruption, but only an HMAC shows the payload was written by the key holder.',
         },
-        { kind: 'token-inspector', id: 'tokens', caption: 'Explore the comfort-band tokens' },
       ],
-      outcome: {
+      challenges: [
+        'Repetitive textures such as foliage and windows produce false copy-move matches; geometric consistency checks filter most of them.',
+        'Balancing watermark robustness against visual quality, tracked with PSNR and SSIM.',
+      ],
+      currentStatus:
+        'Runs locally via the backend and frontend scripts; deployment configuration (render.yaml, vercel.json) is in the repository, with no public demo yet.',
+      facts: [],
+      limitations: [
+        'The README carries an explicit forensic disclaimer: outputs are screening indicators, not evidence.',
+        'Evaluation uses synthetic manipulations rather than a standard forensic benchmark.',
+      ],
+      learned: [
+        'Writing the disclaimer first shaped every API response that followed.',
+        'Classical pipelines are easy to explain because every stage produces an inspectable intermediate image.',
+      ],
+    },
+    {
+      slug: 'visionrag-x',
+      title: 'VisionRAG-X',
+      kind: 'Research prototype',
+      category: 'AI / ML · Retrieval',
+      status: 'Research prototype',
+      period: 'Aug – Oct 2026',
+      summary:
+        'Conflict-aware multimodal retrieval for lecture videos: aligns speech, slide text, formulas and code, detects when they disagree, and abstains when the evidence is insufficient.',
+      stack: ['Python', 'FastAPI', 'React', 'BM25', 'Vector search', 'Graph retrieval'],
+      illustration: 'frames',
+      repoUrl: `${GH}/visionRag`,
+      overview:
+        "An end-to-end RAG framework for educational videos that keeps each modality's provenance, detects speech-versus-slide contradictions, tracks corrections over time, and cites seekable timestamps.",
+      problem:
+        'Standard RAG flattens a lecture into a transcript: it ignores equations and code on slides, misses when the speaker contradicts the slide, and presents a corrected statement as if it were still true.',
+      whyItMatters:
+        'Students search lectures for exact answers; a confident wrong answer with no timestamp is worse than no answer.',
+      goals: [
+        'Keep independent provenance for speech, slide text, formulas, code and visual scenes.',
+        'Flag cross-modal conflicts and resolve superseded claims at retrieval time.',
+        'Abstain on unanswerable questions instead of hallucinating.',
+      ],
+      constraints: [
+        "Research prototype: evaluation runs on the project's own reproducible set, not a public leaderboard.",
+      ],
+      contribution: 'Sole author of the framework, back end, front end and evaluation scripts.',
+      architecture: {
         summary:
-          'On replayed 2023 sensor data the system would have opened vents about 4 hours before the old rule-based controller.', // TODO: verify
-        metrics: [
-          { label: 'Earlier actions', value: '4h' }, // TODO: verify
-          { label: 'HVAC energy (simulated)', value: '−19%' }, // TODO: verify
+          'FastAPI back end with modality extractors, a conflict detector and a knowledge-evolution graph; React front end with seekable citations.',
+        flow: [
+          'Ingest: speech (ASR), slide OCR, formulas, code, visual scenes — time-aligned',
+          'Cross-modal conflict detector over sliding temporal windows',
+          'Versioned knowledge-evolution graph for supersession and errata',
+          'Strategy router: semantic · BM25 · graph walk · temporal · hybrid',
+          'Evidence-sufficiency gate → cited answer or abstention',
         ],
       },
-      retro: ['Next time I’d put it in front of a working grower before tuning the model.'],
-      githubUrl: 'https://github.com/abhiveeramallu', // TODO: link the specific repository
-    },
-    {
-      slug: 'lumina-design-system',
-      title: 'Lumina Tokens',
-      client: 'Open source',
-      category: 'Design Systems',
-      provenance: 'Self-initiated',
-      year: '2023',
-      tagline: 'One Figma source, three platforms, zero hand-copied hex codes.',
-      description:
-        'A token pipeline that turns Figma variables into CSS, Swift and Jetpack Compose themes, with a contrast check that blocks inaccessible colours in CI.',
-      role: 'Design systems engineer',
-      team: 'Solo',
-      timeline: '5 months',
-      tools: ['Figma variables', 'Style Dictionary', 'TypeScript', 'GitHub Actions', 'Tailwind CSS'],
-      color: '#5B5BFF',
-      softBg: 'purple',
-      art: 'tokens',
-      featured: false,
-      metrics: [
-        { label: 'Tokens', value: '480+' }, // TODO: verify
-        { label: 'Platforms from one source', value: '3' },
-        { label: 'Minimum text contrast, enforced', value: '4.5:1' },
-      ],
-      problem:
-        'Teams copy hex codes from Figma into web, iOS and Android by hand. Brands drift, and inaccessible colours ship because nobody checks.',
-      constraints: [
-        'Designers keep working in Figma — no new tool to learn.',
-        'Output must be idiomatic on each platform, not a lowest-common-denominator JSON.',
-      ],
-      process: [
+      implementation: [
         {
-          step: 'Three tiers',
-          detail: 'Global → semantic → component tokens, so a rebrand changes a dozen values, not hundreds.',
+          title: 'Conflict detection',
+          body: 'Compares spoken and on-slide statements within sliding time windows and marks disagreements it cannot resolve as explicit unresolved conflicts.',
         },
         {
-          step: 'Contrast gate',
-          detail:
-            'A CI step computes WCAG contrast for every text/background pair and fails the PR below 4.5:1.',
-          media: {
-            id: 'process-2',
-            caption: 'Failing contrast check in CI',
-            alt: 'GitHub check output listing a failing colour pair',
-          },
+          title: 'Knowledge-evolution graph',
+          body: 'A directed multigraph records which claims supersede which, so a later correction wins at retrieval time.',
+        },
+        {
+          title: 'Anti-hallucination gate',
+          body: 'Checks evidence sufficiency with stemmed token overlap and timestamp bounds before answering, and returns citations that seek to the moment in the video.',
         },
       ],
       decisions: [
         {
-          title: 'Aliases, not copies',
-          chose: 'Semantic tokens that reference global ones',
-          over: 'Flat token lists',
-          because: 'Dark mode became a remap of one tier instead of a second palette.',
+          decision: 'Route each query to a retrieval strategy.',
+          because:
+            'Exact-term questions, "when did they say" questions and conceptual questions need different retrievers.',
         },
       ],
-      solution:
-        'A zero-touch pipeline: change a variable in Figma, get a pull request with updated themes for all three platforms.',
-      gallery: [
-        { kind: 'token-inspector', id: 'tokens', caption: 'Inspect how a component token resolves' },
-        {
-          kind: 'before-after',
-          id: 'drift',
-          caption: 'Hand-copied hex vs. generated tokens',
-          beforeLabel: 'Before · drift',
-          afterLabel: 'After · tokens',
-        },
+      challenges: ['Aligning modalities that arrive at different granularities: words, slides and scenes.'],
+      currentStatus:
+        'Research prototype with backend and frontend test suites and a reproducible evaluation script.',
+      facts: [],
+      limitations: [
+        'Query-to-strategy classification is heuristic.',
+        "Results come from the project's own evaluation set; the README lists threats to validity.",
       ],
-      outcome: {
-        summary: 'Dark mode for the demo app took one afternoon: remap the semantic tier, regenerate, done.',
-        metrics: [
-          { label: 'Dark mode time', value: '1 afternoon' },
-          { label: 'Manual colour edits', value: '0' },
-        ],
-      },
-      retro: ['I over-built the Swift output before anyone needed it. Ship web first, then follow demand.'],
-      githubUrl: 'https://github.com/abhiveeramallu', // TODO: link the specific repository
+      learned: [
+        'Abstaining is a feature: the evidence gate makes the system more trustworthy than a higher answer rate would.',
+      ],
     },
     {
-      slug: 'kinetic-craft',
-      title: 'Kinetic Craft',
-      client: 'Concept identity',
-      category: 'Brand Identity',
-      provenance: 'Self-initiated',
-      year: '2023',
-      tagline: 'A studio identity where the logo is a physics simulation.',
-      description:
-        'A concept identity for a creative studio built from soft-body simulations: glossy objects that squash, bounce and settle into the wordmark.',
-      role: 'Brand designer & 3D artist',
-      team: 'Solo',
-      timeline: '2 months',
-      tools: ['Blender', 'Three.js', 'Figma', 'After Effects'],
-      color: '#FF5A1F',
-      softBg: 'yellow',
-      art: 'kinetic',
-      featured: false,
-      metrics: [
-        { label: 'Simulations explored', value: '40+' },
-        { label: 'Web hero payload', value: '180kB', context: 'Draco-compressed GLB' },
-        { label: 'Frame rate', value: '60fps', context: '2019 MacBook Air' }, // TODO: verify
-      ],
+      slug: 'honeypot-attack-classification',
+      title: 'Honeypot Attack Classifier',
+      kind: 'Engineering project',
+      category: 'Security · Data pipeline',
+      status: 'Working prototype',
+      period: 'Sep – Oct 2026',
+      summary:
+        'Turns Cowrie SSH/Telnet honeypot logs into sessions, tags them with MITRE ATT&CK techniques, and produces a dashboard, Sigma rule drafts and an IoC feed.',
+      stack: ['Python', 'Pandas', 'scikit-learn', 'TF-IDF', 'SQLite', 'Parquet', 'Streamlit', 'Sigma'],
+      illustration: 'network',
+      repoUrl: `${GH}/Honeypot-Attack-Classification`,
+      overview:
+        'An end-to-end pipeline from raw honeypot events to analyst- and SIEM-facing output, with a deterministic rule engine and an optional ML classifier that falls back to rules when it is not confident.',
       problem:
-        'Studio sites all look the same: a grotesk wordmark, a black background and a reel. Nothing you can feel.',
-      constraints: [
-        'The 3D had to load fast enough for a hero (<200 kB).',
-        'The identity had to work as a flat SVG too.',
+        'A honeypot produces thousands of interleaved JSON events. Analysts need sessions, techniques and indicators, not raw lines.',
+      whyItMatters:
+        'Mapping attacker behaviour to ATT&CK techniques and exporting detections turns a research honeypot into something a security team can use.',
+      goals: [
+        'Group events into sessions robustly despite malformed lines, terminal escapes and duplicates.',
+        'Tag ATT&CK techniques with rules, and with ML when confidence is high enough.',
+        'Export Sigma drafts and an IoC CSV of IPs, URLs and SHA-256 hashes.',
       ],
-      process: [
+      constraints: [
+        'The bundled log file is synthetic; a real honeypot must run on an isolated network.',
+        'No human-labelled ground truth yet, so the bootstrapped model is a smoke-test model.',
+      ],
+      contribution:
+        'Sole author: ETL, rule catalogue, feature extraction, training pipeline, dashboard, deployment and log-shipping scripts.',
+      architecture: {
+        summary:
+          'Batch pipeline (run_pipeline.py) writing to SQLite and Parquet, read by a Streamlit dashboard.',
+        flow: [
+          'Cowrie JSON logs → rsync or Filebeat shipping',
+          'ETL: group by session, strip escapes, dedupe consecutive commands',
+          'Rule engine (regex + login-attempt rules) ‖ ML (flags + metrics + TF-IDF → Random Forest / calibrated SVM)',
+          'Confidence threshold → ML prediction or per-session rule fallback',
+          'SQLite / Parquet → Streamlit dashboard, Sigma drafts, IoC feed',
+        ],
+      },
+      implementation: [
         {
-          step: 'Physics sketches',
-          detail:
-            'Forty-plus soft-body loops in Blender to find motion that felt like the studio: heavy, then playful.',
+          title: 'Rules as the baseline',
+          body: 'Brute force (T1110) is emitted at three or more login attempts; command techniques come from a regex catalogue.',
         },
         {
-          step: 'Web pipeline',
-          detail: 'Baked lighting, Draco compression and instancing got the hero to 180 kB.',
+          title: 'Features',
+          body: 'Boolean critical-command flags, session metrics and word-level TF-IDF unigrams and bigrams; the fitted vectoriser is persisted so inference uses the same columns.',
+        },
+        {
+          title: 'Detections',
+          body: 'Techniques repeated across a minimum number of sessions become experimental Sigma rules; source IPs, download URLs and hashes become an IoC CSV.',
         },
       ],
       decisions: [
         {
-          title: 'Bake, don’t simulate live',
-          chose: 'Pre-baked animation clips',
-          over: 'Real-time physics in the browser',
-          because: 'Same look at a tenth of the CPU, and it plays identically on every device.',
+          decision: 'Fall back to rules per session below a confidence threshold.',
+          because:
+            'Without labelled data the model cannot be trusted alone; rules stay deterministic and auditable.',
         },
       ],
-      solution: 'A wordmark, a motion system and a WebGL hero that share the same glossy objects.',
-      gallery: [
-        {
-          kind: 'image',
-          id: 'gallery-1',
-          span: 'full',
-          caption: 'Wordmark settling',
-          alt: 'Glossy shapes forming a wordmark',
-        },
-        {
-          kind: 'image',
-          id: 'gallery-2',
-          span: 'half',
-          caption: 'Flat SVG version',
-          alt: 'Flat logo lockup',
-        },
-        {
-          kind: 'image',
-          id: 'gallery-3',
-          span: 'half',
-          caption: 'Motion stills',
-          alt: 'Frames of a bouncing object',
-        },
+      challenges: [
+        'Interleaved events from concurrent sessions and noisy terminal output inside captured commands.',
       ],
-      outcome: {
-        summary: 'A complete concept identity and the technical recipe I reused for this site’s hero.',
-        metrics: [{ label: 'Hero payload', value: '180kB' }],
+      currentStatus:
+        'Runs end to end on bundled synthetic logs; deployment and log-shipping files for a real, isolated honeypot are included.',
+      facts: [],
+      limitations: [
+        'Sample data is synthetic and suitable for tests and smoke runs only.',
+        'The ML model is bootstrapped from rule output until real sessions are human-labelled.',
+      ],
+      learned: ['Designing the labelling workflow early matters more than the choice of classifier.'],
+    },
+    {
+      slug: 'edge-ai-thermal-management',
+      title: 'Edge AI Thermal Management',
+      kind: 'Academic project',
+      category: 'Embedded · Machine learning',
+      status: 'Working prototype',
+      period: 'Oct 2026',
+      summary:
+        'Forecasts laptop CPU temperature five seconds ahead from ten seconds of history and sends the result over UART to an STM32 Nucleo-F446RE that drives a cooling fan with PWM.',
+      stack: ['Python', 'scikit-learn', 'Pandas', 'pyserial', 'STM32 Nucleo-F446RE', 'UART', 'HWiNFO'],
+      illustration: 'board',
+      repoUrl: `${GH}/EdgeAiThermalManagementUsingStm32`,
+      overview:
+        'A predictive thermal controller: telemetry is sampled at about 1 Hz, an Extra Trees regressor forecasts the temperature 5 s ahead, and the host sends a control packet to the microcontroller.',
+      problem:
+        'Reactive fan control responds only after the temperature crosses a threshold, causing thermal lag and fan hunting under bursty workloads.',
+      whyItMatters: 'Acting a few seconds early can smooth fan behaviour and avoid temperature spikes.',
+      goals: [
+        'Forecast CPU temperature 5 s ahead from temperature and usage history.',
+        'Evaluate without temporal leakage.',
+        'Drive a real fan from the forecast through an STM32 board.',
+      ],
+      constraints: [
+        'Inference runs on the host PC, not on the STM32; the microcontroller is the real-time actuator.',
+        'The embedded firmware source (UART parser, PWM timer, watchdog) is not in the repository.',
+      ],
+      contribution:
+        'Sole author: data cleaning, training and evaluation scripts, live prediction and the UART bridge.',
+      architecture: {
+        summary:
+          'Host-side Python pipeline with a USB-UART link (115200 baud, 8-N-1) to the microcontroller.',
+        flow: [
+          'HWiNFO telemetry at ~1 Hz: CPU Tctl/Tdie + core usage',
+          '10-sample window → Extra Trees regressor (n=300) → temperature at t + 5 s',
+          'Fan duty cycle from thresholds with hysteresis',
+          'UART packet → STM32 Nucleo-F446RE → timer PWM → fan',
+        ],
       },
-      retro: ['I’d test the identity at favicon size on day one — two shapes didn’t survive it.'],
-      githubUrl: 'https://github.com/abhiveeramallu', // TODO: link the specific repository
+      implementation: [
+        {
+          title: 'Leakage-safe split',
+          body: "Chronological 70/15/15 split inside each workload session with a 15-sample guard gap at every boundary; since a window spans 14 s, no input window overlaps another split's targets.",
+        },
+        {
+          title: 'Model selection on validation only',
+          body: 'Candidates were compared on the validation set, where the tuned Extra Trees model beat the persistence baseline (MAE 0.96 °C vs 1.04 °C).',
+        },
+        {
+          title: 'Live bridge',
+          body: 'live_uart.py separates live hardware mode from simulation, supports a dry run, and refuses to resend stale sensor readings.',
+        },
+      ],
+      decisions: [
+        {
+          decision: 'Report the unseen test result even though the baseline won.',
+          because:
+            "On the test set the model's MAE (1.36 °C) was higher than the latest-temperature baseline (1.26 °C); the training summary records this.",
+        },
+      ],
+      challenges: [
+        'Idle sessions are dominated by persistence: the latest reading is already an excellent predictor.',
+        'A sudden idle-temperature jump in the raw data needed its own diagnosis script.',
+      ],
+      currentStatus:
+        'Host pipeline, model and UART bridge are complete; the embedded firmware is flashed separately and is not part of the repository.',
+      facts: [
+        {
+          label: 'Cleaned samples across gaming / normal / idle',
+          value: '8,870',
+          source: 'training_summary.txt',
+        },
+        {
+          label: 'Test MAE — model vs. persistence',
+          value: '1.36 °C vs 1.26 °C',
+          source: 'training_summary.txt',
+        },
+        { label: 'Forecast horizon', value: '5 s', source: 'outputs/model_metadata.json' },
+      ],
+      limitations: [
+        'On unseen test data the model does not beat the simple persistence baseline overall.',
+        'Data comes from a single laptop, so results may not transfer to other hardware.',
+      ],
+      learned: ['Always compare against the simplest possible baseline — here it was hard to beat.'],
+    },
+    {
+      slug: 'greenhouse-microclimate-forecasting',
+      title: 'Greenhouse Microclimate Forecasting',
+      kind: 'Academic project',
+      category: 'AI / ML · Forecasting',
+      status: 'Live demo',
+      period: 'Mar – Jul 2026',
+      summary:
+        'Forecasts greenhouse temperature from historical CSV data with a GRU and three classical models, combines them by inverse-RMSE weighting, and simulates fan and spray control.',
+      stack: ['Python', 'PyTorch (GRU)', 'scikit-learn', 'Pandas', 'NumPy', 'Matplotlib', 'Seaborn'],
+      illustration: 'greenhouse',
+      repoUrl: `${GH}/GreenHouseMicroClimateForcastingModel`,
+      liveUrl: 'https://green-house-micro-climate-forcastin.vercel.app',
+      overview:
+        'A software-only forecasting framework: data management, parallel models, an ensemble coordinator, threshold-based control simulation and a reporting dashboard.',
+      problem:
+        'Greenhouse climate control is reactive; a forecast lets fans or sprays act before temperatures leave the comfortable range.',
+      whyItMatters: 'Crops are sensitive to temperature excursions, and earlier action can reduce them.',
+      goals: [
+        'Forecast temperature per crop type (SA, SB, SC, TA, TB, TC).',
+        'Weight models by their measured error.',
+        'Generate an actuator timeline from the forecast.',
+      ],
+      constraints: [
+        'Software-side only: CSV data and simulated actuation, no live sensors.',
+        'Aligned with a published reference paper (DOI 10.1038/s41598-025-15615-3).',
+      ],
+      contribution: 'Sole author of the pipeline, models, ensemble, control simulation and dashboard.',
+      architecture: {
+        summary: 'Five modules from ingestion to reporting.',
+        flow: [
+          'Data management: CSV ingest, cleaning, scaling, sliding-window sequences',
+          'Parallel models: Linear Regression · Random Forest · Gradient Boosting · GRU (PyTorch, 50 units)',
+          'Ensemble: weight = 1 / RMSE, normalised across models',
+          'Control simulation: below 18 °C fan on, above 28 °C spray on, otherwise off',
+          'Dashboard, comparison charts and CSV / JSON exports',
+        ],
+      },
+      implementation: [
+        {
+          title: 'Inverse-RMSE ensemble',
+          body: "Each model's weight is the reciprocal of its RMSE, normalised across models, so the most accurate model dominates without discarding the others.",
+        },
+        {
+          title: 'LSTM → GRU',
+          body: 'The primary network moved from LSTM to a 50-unit GRU in March 2026 to reduce computational cost.',
+        },
+      ],
+      decisions: [
+        {
+          decision: 'Keep a linear-regression baseline in the comparison.',
+          because: 'It shows whether the neural model is adding anything.',
+        },
+      ],
+      challenges: ['Building sequences per crop type without leaking future values across windows.'],
+      currentStatus: 'Complete as a software-side system, with a public dashboard demo.',
+      facts: [],
+      limitations: [
+        'Control actions are simulated from thresholds; no actuators or live sensors are connected.',
+        'Historical CSV data only.',
+      ],
+      learned: [
+        'Weighted ensembles are a simple, explainable way to combine models with different strengths.',
+      ],
+    },
+    {
+      slug: 'smart-document-intelligence',
+      title: 'Smart Document Intelligence',
+      kind: 'Personal project',
+      category: 'AI / ML · Privacy',
+      status: 'Working prototype',
+      period: 'Feb – Apr 2026',
+      summary:
+        'Local-only document analysis: upload PDF, DOCX, text or images; extract entities, summarise, compare versions and export — with a local LLM through Ollama and no cloud APIs.',
+      stack: ['FastAPI', 'SQLite', 'React', 'Vite', 'Ollama (llama3.2)'],
+      illustration: 'sheets',
+      repoUrl: `${GH}/Smart-Document-Intelligence`,
+      overview:
+        'A privacy-first document workspace. Files stay on disk, metadata and analyses stay in a local SQLite database, and inference runs on a local Ollama endpoint.',
+      problem:
+        'Summarising sensitive documents with cloud AI services sends their contents to a third party.',
+      whyItMatters:
+        'Offer letters, contracts and records are exactly the documents people should not upload anywhere.',
+      goals: [
+        'Analyse and summarise documents without any external API.',
+        'Summaries at three levels: brief, detailed and bullets.',
+        'Compare document versions and export structured data.',
+      ],
+      constraints: [
+        'Everything runs locally and requires Ollama on the same machine.',
+        'Document chat, templates, workflows and notifications were deliberately removed from scope.',
+      ],
+      contribution:
+        'Sole author of the FastAPI back end, the parsing and analysis pipeline, and the React workspace.',
+      architecture: {
+        summary:
+          'React + Vite front end; FastAPI back end with SQLite; local Ollama for language and vision models.',
+        flow: [
+          'Upload (PDF, DOCX, TXT, PNG, JPG) → local file store',
+          'Parser → extracted text',
+          'Intelligence engine → Ollama → entities + summary, cached in SQLite',
+          'Workspace: summary, compare (similarity %), export (JSON / CSV / Markdown report)',
+        ],
+      },
+      implementation: [
+        {
+          title: 'Cached summaries',
+          body: 'Summaries are generated on request at the chosen level and cached in SQLite, so repeat views do not call the model again.',
+        },
+        {
+          title: 'Version comparison',
+          body: 'A compare endpoint returns a similarity percentage between document versions, shown in the compare panel.',
+        },
+      ],
+      decisions: [
+        {
+          decision: 'Cut document chat and workflows from scope.',
+          because: 'A smaller, finished feature set was more useful than many partial ones.',
+        },
+      ],
+      challenges: [
+        'Local model setup issues (port conflicts, Apple MLX loading), documented in the troubleshooting guide.',
+      ],
+      currentStatus:
+        'Runs locally with the back end, Ollama and front end started separately; no hosted demo, by design.',
+      facts: [],
+      limitations: ['Output quality depends on the local model; no accuracy evaluation is published.'],
+      learned: ['Scoping down is a design decision worth writing into the README.'],
+    },
+    {
+      slug: 'stockmind',
+      title: 'StockMind',
+      kind: 'Personal project',
+      category: 'Full-stack · Vision · Optimisation',
+      status: 'In development',
+      period: 'Nov 2026',
+      summary:
+        'Warehouse inventory platform combining YOLOv8 shelf auditing, demand forecasting, EOQ-based replenishment and an OR-Tools linear program for inter-warehouse transfers.',
+      stack: [
+        'FastAPI',
+        'PostgreSQL',
+        'React',
+        'TypeScript',
+        'YOLOv8',
+        'OpenCV',
+        'XGBoost',
+        'Google OR-Tools',
+      ],
+      illustration: 'racks',
+      repoUrl: `${GH}/StockMind`,
+      overview:
+        'Brings shelf images, demand history and stock ledgers into one system that flags discrepancies and suggests reorders and transfers.',
+      problem: 'Manual counts and reactive reorder rules lead to ghost inventory and stock-outs.',
+      whyItMatters:
+        'Inventory errors compound across warehouses; catching them early avoids both shortages and over-ordering.',
+      goals: [
+        'Count stock from rack images and reconcile against the ledger.',
+        'Forecast demand against simple baselines.',
+        'Optimise transfers between warehouses as a minimum-cost flow problem.',
+      ],
+      constraints: [
+        "Started in November 2026; results in the README come from the project's own experiments.",
+      ],
+      contribution:
+        'My own repository, built end to end: the FastAPI service and data model, the vision, forecasting and optimisation modules, and the React front end.',
+      architecture: {
+        summary:
+          'FastAPI service layer with JWT and role-based access, a PostgreSQL ledger and a React front end.',
+        flow: [
+          'Vision: YOLOv8n + OpenCV rack-tier segmentation → SKU counts',
+          'Discrepancy reconciliation with human sign-off',
+          'Forecasting: seasonal naive vs. Random Forest vs. XGBoost',
+          'Replenishment: Wilson EOQ + dynamic reorder point',
+          'Network optimisation: OR-Tools GLOP minimum-cost flow',
+        ],
+      },
+      implementation: [
+        {
+          title: 'Minimum-cost flow transfers',
+          body: 'Regional deficits are resolved by a linear program, solved with OR-Tools GLOP, that prefers inter-hub transfers to new procurement when they are cheaper.',
+        },
+        {
+          title: 'Audit with sign-off',
+          body: 'Vision counts that disagree with the ledger are flagged with confidence-aware filtering and need a person to confirm them.',
+        },
+      ],
+      decisions: [
+        {
+          decision: 'Benchmark forecasting against seasonal naive.',
+          because: 'A learned model has to beat the obvious baseline to justify itself.',
+        },
+      ],
+      challenges: ['Combining vision, forecasting and optimisation outputs into one consistent ledger.'],
+      currentStatus: 'In active development; a prototype, not a deployed product.',
+      facts: [],
+      limitations: [
+        "Experiments use the project's own data; there is no deployment or real warehouse usage.",
+      ],
+      learned: ['Optimisation only becomes useful once its inputs — counts and forecasts — are trustworthy.'],
     },
   ] as ProjectItem[],
 
-  experiments: [
+  /** Smaller or earlier repositories, linked without case studies. */
+  archive: [
     {
-      slug: 'flow-gradient',
-      title: 'Flow Field Gradient',
-      tagline: 'A raw-GLSL gradient you can push around with your cursor.',
-      kind: 'Shader',
-      year: '2026',
-      color: '#5B5BFF',
-      softBg: 'purple',
-      isNew: true,
-      howIBuiltIt: [
-        'A full-screen plane with a custom drei shaderMaterial — no post-processing.',
-        'Domain-warped simplex noise drives the colour mix between the four brand hues.',
-        'The pointer injects a decaying “stir” uniform, so the field swirls where you move and settles back.',
-      ],
-      stack: ['GLSL', 'React Three Fiber', 'drei shaderMaterial'],
-      sourcePath: 'components/playground/FlowGradient.tsx',
+      name: 'Ticket Booking System',
+      description:
+        'Seat holds with automatic expiry, FIFO waitlist offers, QR tickets and live seat maps over WebSockets. Payments are mocked.',
+      stack: 'Python · WebSockets · JWT',
+      url: `${GH}/Tickbooking`,
+      liveUrl: 'https://tickbooking-13s574d7i-abhis-projects-4750c1f6.vercel.app/',
     },
     {
-      slug: 'hungarian-matrix',
-      title: 'Hungarian Matrix Lab',
-      tagline: 'Beat the algorithm that powers RouteFusion’s dispatch.',
-      kind: 'Browser game',
-      year: '2024',
-      color: '#FF5A1F',
-      softBg: 'yellow',
-      howIBuiltIt: [
-        'A real Hungarian (Kuhn–Munkres) solver in TypeScript computes the optimum for every random board.',
-        'You assign drivers to orders; the game compares your total with the optimum and shows the gap.',
-      ],
-      stack: ['TypeScript', 'React'],
-      sourcePath: 'components/playground/HungarianGame.tsx',
+      name: 'Secure Messaging — Signal-inspired clone',
+      description:
+        'Educational full-stack messaging app with contacts, direct and group chats. It does not implement the Signal Protocol, and says so.',
+      stack: 'Next.js · FastAPI · SQLAlchemy',
+      url: `${GH}/SignalAppClone`,
+      liveUrl: 'https://signal-app-clone.vercel.app',
     },
     {
-      slug: 'contrast-ramps',
-      title: 'Contrast Ramp Generator',
-      tagline: 'Pick a brand colour, get a 50–900 ramp with honest WCAG ratios.',
-      kind: 'Tool',
-      year: '2023',
-      color: '#8FB30A',
-      softBg: 'green',
-      howIBuiltIt: [
-        'Uses the same contrast maths as this site’s token tests (lib/contrast.ts).',
-        'Flags the first step in the ramp that is safe for body text on light and dark backgrounds.',
-      ],
-      stack: ['TypeScript', 'WCAG 2.2'],
-      sourcePath: 'components/playground/ContrastRamps.tsx',
+      name: 'GreenTwin AI',
+      description:
+        'Greenhouse digital twin driven by live or simulated weather and heat-transfer equations, predicting 10 minutes to 2 hours ahead.',
+      stack: 'Python · Weather APIs',
+      url: `${GH}/GreenTwin`,
+      liveUrl: 'https://green-twin-25eo.vercel.app',
     },
     {
-      slug: 'chroma-synth',
-      title: 'Chroma Beat Synth',
-      tagline: 'A pentatonic pad you can play with your keyboard.',
-      kind: 'Sound toy',
-      year: '2023',
-      color: '#5B5BFF',
-      softBg: 'blue',
-      howIBuiltIt: [
-        'Web Audio oscillators with a short attack/decay envelope — no samples.',
-        'Keys A–J play notes; a single shared AudioContext keeps latency low.',
-      ],
-      stack: ['Web Audio API', 'React'],
-      sourcePath: 'components/playground/ChromaSynth.tsx',
+      name: 'Regret Forecaster',
+      description:
+        'Next.js app that streams a structured analysis of a decision and the cognitive biases involved.',
+      stack: 'Next.js · Supabase · LLM APIs',
+      url: `${GH}/RegretForecaster`,
+      liveUrl: 'https://regret-forecaster.vercel.app',
     },
     {
-      slug: 'clay-sculptor',
-      title: 'Pastel Clay Sculptor',
-      tagline: 'Tune clearcoat, roughness and colour on a soft 3D object.',
-      kind: '3D toy',
-      year: '2024',
-      color: '#FF5A1F',
-      softBg: 'pink',
-      howIBuiltIt: [
-        'MeshPhysicalMaterial with clearcoat under a Lightformer studio — the same rig as the home hero.',
-        'Sliders write straight to material uniforms, so nothing re-renders in React.',
-      ],
-      stack: ['React Three Fiber', 'drei', 'three.js'],
-      sourcePath: 'components/playground/ClaySculptor.tsx',
-    },
-  ] as Experiment[],
-
-  testimonials: [
-    {
-      quote:
-        'Replace me with two sentences from a RouteFusion teammate about how you handled the dispatch UI under deadline.',
-      name: 'Teammate name',
-      role: 'Back-end engineer, RouteFusion',
-      placeholder: true,
+      name: 'AI-Assisted Access Policy Management',
+      description:
+        'AI recommends access policies, a person must approve them, and files are encrypted before storage.',
+      stack: 'JavaScript · Node.js',
+      url: `${GH}/AI-AssistedPolicyManagementSystem`,
     },
     {
-      quote: 'Replace me with a line from a professor or mentor about your design-engineering range.',
-      name: 'Mentor name',
-      role: 'Faculty, VIT',
-      placeholder: true,
+      name: 'ShadowHunter',
+      description: 'Python tool that discovers and monitors devices on a local network using Scapy.',
+      stack: 'Python · Scapy',
+      url: `${GH}/ShadowHunter-Network-Monitoring-Tool`,
     },
-    {
-      quote: 'Replace me with a freelance client’s note on speed, communication or outcome.',
-      name: 'Client name',
-      role: 'Founder, early-stage startup',
-      placeholder: true,
-    },
-  ] as Testimonial[],
+  ] as ArchiveRepo[],
 
   journey: [
     {
-      period: '2023 — 2027',
-      role: 'B.Tech, Computer Science',
-      company: 'Vellore Institute of Technology',
-      location: 'Vellore, India',
+      period: '2023 – 2027 (expected)',
+      title: 'B.Tech, Computer Science',
+      org: 'Vellore Institute of Technology, Vellore',
       description:
-        'Human–computer interaction, algorithms and machine learning — and most of my evenings in Figma and VS Code.',
-      highlights: ['Merit scholarship', 'RouteFusion: 1st at the engineering showcase'], // TODO: verify both
+        'Coursework and projects across machine learning, software engineering, security and embedded systems.',
     },
     {
-      period: '2024',
-      role: 'Generative AI Engineering certificate',
-      company: 'IBM',
-      location: 'Remote',
-      description:
-        'LLMs, retrieval-augmented generation, vector search and deployment. Applied directly in DocuSense.',
-      highlights: ['RAG systems', 'Local model inference'],
-    },
-    {
-      period: '2022 — 2023',
-      role: 'Independent design engineer',
-      company: 'Freelance',
-      location: 'Bengaluru, India',
-      description: 'Landing pages, component libraries and small product builds for early-stage teams.',
-      highlights: ['Design + build, end to end'], // TODO: add client count once verified
+      period: 'Certification',
+      title: 'Generative AI Engineering Professional Certificate',
+      org: 'IBM',
+      description: 'Large language models, retrieval-augmented generation and model deployment.',
     },
   ] as TimelineEntry[],
 
-  values: [
-    {
-      title: 'Feel over flash',
-      description:
-        'Springs, weight and sound make software feel crafted. I add delight only where it helps someone understand.',
-    },
-    {
-      title: 'Make the maths obvious',
-      description:
-        'Matching algorithms and classifiers are invisible. My job is to make their decisions legible in one glance.',
-    },
-    {
-      title: 'Design in the material',
-      description: 'I prototype in code, so constraints show up in week one instead of in QA.',
-    },
-  ],
-
   chatSuggestions: [
-    'What’s your design process?',
-    'Show me your best 3D work',
-    'Are you available?',
-    'What did you do on RouteFusion?',
+    'What does RouteFusion do?',
+    'Which projects use machine learning?',
+    "What are ThreatLensAI's limitations?",
+    'How can I contact you?',
   ],
 };
 
 export type SiteConfig = typeof SITE_CONFIG;
 
 export const getProject = (slug: string) => SITE_CONFIG.projects.find((p) => p.slug === slug);
-export const getExperiment = (slug: string) => SITE_CONFIG.experiments.find((e) => e.slug === slug);

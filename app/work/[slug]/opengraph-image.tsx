@@ -12,9 +12,8 @@ export function generateStaticParams() {
 export default function Image({ params }: { params: { slug: string } }) {
   const p = getProject(params.slug);
   return renderOg({
-    eyebrow: p ? `${p.category} case study · ${p.year}` : 'Case study',
+    eyebrow: p ? `${p.status} · ${p.category}` : 'Case study',
     title: p?.title ?? 'Case study',
-    accent: p?.tagline,
-    color: p?.color,
+    accent: p ? `${p.kind}, ${p.period}` : undefined,
   });
 }

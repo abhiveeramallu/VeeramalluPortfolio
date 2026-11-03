@@ -22,7 +22,7 @@ interface Message extends ChatTurn {
 const WELCOME: Message = {
   id: 'welcome',
   role: 'assistant',
-  content: `Hi — I’m an AI assistant grounded in ${SITE_CONFIG.shortName}’s portfolio. Ask about projects, process or availability. I’ll only answer from what’s on this site.`,
+  content: `Hi — I’m an AI assistant grounded in ${SITE_CONFIG.shortName}’s portfolio. Ask about projects, skills or education. I’ll only answer from what’s on this site.`,
 };
 
 let counter = 0;
@@ -152,9 +152,9 @@ export function AskMeChat() {
         }}
         aria-expanded={open}
         aria-controls="ask-me-panel"
-        className="flex items-center gap-2 rounded-pill border border-line bg-surface p-3 text-ink shadow-card transition-colors hover:border-ink sm:px-4"
+        className="flex items-center gap-2 rounded-pill border border-line bg-surface p-3 text-ink shadow-lift transition-colors hover:border-ink sm:px-4"
       >
-        <MessageCircle className="h-5 w-5 text-indigo-600" aria-hidden="true" />
+        <MessageCircle className="h-5 w-5 text-accent-2" aria-hidden="true" />
         <span className="sr-only font-mono text-xs font-semibold sm:not-sr-only">
           {open ? 'Close' : 'Ask me anything'}
         </span>
@@ -198,14 +198,14 @@ export function AskMeChat() {
                     className={cn(
                       'max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 leading-relaxed',
                       m.role === 'user'
-                        ? 'rounded-br-md bg-[#111] text-[#f6f4ef]'
+                        ? 'rounded-br-md bg-ink text-night'
                         : 'rounded-bl-md border border-line bg-bg text-ink',
                     )}
                   >
                     {m.content ||
                       (m.streaming && (
                         <span
-                          className="inline-block h-4 w-2 animate-pulse bg-indigo-500 align-middle"
+                          className="inline-block h-4 w-2 animate-pulse bg-accent-2 align-middle"
                           aria-hidden="true"
                         />
                       ))}
@@ -216,7 +216,7 @@ export function AskMeChat() {
                             <Link
                               href={s.href}
                               onClick={close}
-                              className="inline-block rounded-pill border border-line bg-surface px-2.5 py-1 font-mono text-[11px] text-indigo-700 hover:border-indigo-500"
+                              className="inline-block rounded-pill border border-line bg-surface px-2.5 py-1 font-mono text-[11px] text-accent-2 hover:border-indigo-500"
                             >
                               {s.title} →
                             </Link>
@@ -278,7 +278,7 @@ export function AskMeChat() {
                 <button
                   type="button"
                   onClick={() => abortRef.current?.abort()}
-                  className="rounded-full bg-[#111] p-3 text-[#f6f4ef]"
+                  className="rounded-full bg-raised p-3 text-ink"
                   aria-label="Stop generating"
                 >
                   <Square className="h-3.5 w-3.5" />
@@ -287,7 +287,7 @@ export function AskMeChat() {
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="rounded-full bg-orange-500 p-3 text-[#111] transition-opacity disabled:opacity-40"
+                  className="rounded-full bg-ink p-3 text-night transition-opacity disabled:opacity-40"
                   aria-label="Send question"
                 >
                   <ArrowUp className="h-4 w-4" />

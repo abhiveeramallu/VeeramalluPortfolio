@@ -10,9 +10,9 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
   return (
     <div className="mx-auto max-w-3xl px-6 pb-24 pt-40 text-center">
-      <p className="eyebrow text-orange-600">Something broke</p>
+      <p className="eyebrow text-accent">Something broke</p>
       <h1 className="type-h2 mt-3 text-ink">
-        That’s on me, not <span className="accent-word text-orange-600">you.</span>
+        That’s on me, not <span className="accent-word text-accent">you.</span>
       </h1>
       <p className="mt-4 text-muted">
         This page hit an unexpected error. Try again, or head back to the work.

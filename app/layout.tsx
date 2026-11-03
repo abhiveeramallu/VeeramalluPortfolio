@@ -5,23 +5,24 @@ import { fontVariables } from '@/lib/fonts';
 import { SITE_URL } from '@/lib/site';
 import { personJsonLd, websiteJsonLd } from '@/lib/seo';
 import { SmoothScroll } from '@/components/ui/SmoothScroll';
-import { CustomCursor } from '@/components/ui/CustomCursor';
 import { Navbar } from '@/components/ui/Navbar';
 import { Footer } from '@/components/ui/Footer';
-import { GrainOverlay } from '@/components/ui/GrainOverlay';
-import { HirePill } from '@/components/ui/HirePill';
-import { Preloader } from '@/components/ui/Preloader';
-import { ScrollProgress } from '@/components/ui/ScrollProgress';
 import { ClientIslands } from '@/components/ui/ClientIslands';
 import { JsonLd } from '@/components/ui/JsonLd';
-import { PRELOADER_SCRIPT, THEME_SCRIPT } from '@/lib/head-scripts';
+import { PointerVars } from '@/components/art/PointerVars';
+import { RevealObserver } from '@/components/art/RevealObserver';
+
+// Before first paint: enable entrance animations only when JS runs, with a failsafe that reveals everything
+// if the observer never starts.
+const JS_SCRIPT = `document.documentElement.classList.add('js');setTimeout(function(){if(!document.documentElement.classList.contains('reveal-ready'))document.documentElement.classList.remove('js')},4000)`;
 
 const title = `${SITE_CONFIG.name} — ${SITE_CONFIG.role}`;
+const description = `${SITE_CONFIG.tagline} Projects in machine learning, full-stack engineering, security and embedded systems, each linked to its GitHub repository.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: title, template: `%s · ${SITE_CONFIG.name}` },
-  description: `${SITE_CONFIG.tagline} ${SITE_CONFIG.role} in ${SITE_CONFIG.location}. ${SITE_CONFIG.status}.`,
+  title: { default: title, template: `%s · ${SITE_CONFIG.shortName}` },
+  description,
   applicationName: SITE_CONFIG.brandName,
   authors: [{ name: SITE_CONFIG.name, url: SITE_URL }],
   creator: SITE_CONFIG.name,
@@ -31,46 +32,42 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     title,
-    description: SITE_CONFIG.tagline,
+    description,
     siteName: SITE_CONFIG.brandName,
   },
-  twitter: { card: 'summary_large_image', title, description: SITE_CONFIG.tagline },
+  twitter: { card: 'summary_large_image', title, description },
   robots: { index: true, follow: true },
   formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#F6F4EF',
-  colorScheme: 'light',
+  themeColor: '#171811',
+  colorScheme: 'dark',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <head>
-        {/* Decides before first paint whether this session gets the preloader (no flash on repeat visits). */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT + PRELOADER_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: JS_SCRIPT }} />
         <JsonLd data={[personJsonLd(), websiteJsonLd()]} />
       </head>
       <body className="bg-bg font-sans text-ink antialiased">
         <a
           href="#main-content"
-          className="fixed left-4 top-4 z-[10000] -translate-y-24 rounded-pill bg-ink px-5 py-3 font-mono text-sm font-semibold text-bg transition-transform focus:translate-y-0"
+          className="fixed left-4 top-4 z-[10000] -translate-y-24 rounded-pill bg-ink px-5 py-3 font-mono text-sm font-semibold text-night transition-transform focus:translate-y-0"
         >
           Skip to content
         </a>
-        <Preloader />
-        <GrainOverlay />
-        <ScrollProgress />
-        <CustomCursor />
         <SmoothScroll />
         <Navbar />
-        <main id="main-content" tabIndex={-1} className="relative z-10 min-h-screen outline-none">
+        <main id="main-content" tabIndex={-1} className="relative min-h-screen outline-none">
           {children}
         </main>
         <Footer />
-        <HirePill />
         <ClientIslands />
+        <PointerVars />
+        <RevealObserver />
       </body>
     </html>
   );

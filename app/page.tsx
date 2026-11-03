@@ -1,23 +1,17 @@
-import { HeroSection } from '@/components/home/HeroSection';
-import { BuildingTicker } from '@/components/home/BuildingTicker';
-import { SelectedProjects } from '@/components/home/SelectedProjects';
-import { ProcessSection } from '@/components/home/ProcessSection';
-import { Testimonials } from '@/components/home/Testimonials';
-import { PlaygroundTeaser } from '@/components/home/PlaygroundTeaser';
-import { SkillsMarquee } from '@/components/home/SkillsMarquee';
-import { ContactCTA } from '@/components/home/ContactCTA';
+import { Hero } from '@/components/home/Hero';
+import { Contents } from '@/components/home/Contents';
+import { Projects } from '@/components/home/Projects';
+import { About } from '@/components/home/About';
+import { Contact } from '@/components/home/Contact';
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <>
-      <HeroSection />
-      <BuildingTicker />
-      <SelectedProjects />
-      <ProcessSection />
-      <Testimonials />
-      <PlaygroundTeaser />
-      <SkillsMarquee />
-      <ContactCTA />
-    </>
+    <div className="theme-pop">
+      <Hero />
+      <Contents />
+      <Projects />
+      <About />
+      <Contact />
+    </div>
   );
 }

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 type Status = 'idle' | 'sending' | 'sent' | 'fallback' | 'error';
 
 const field =
-  'w-full rounded-xl border bg-bg px-4 py-3 text-sm text-ink placeholder:text-muted transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/40';
+  'w-full rounded-xl border bg-bg px-4 py-3 text-sm text-ink placeholder:text-muted transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40';
 
 export function ContactForm() {
   const [values, setValues] = useState<ContactInput>({ name: '', email: '', message: '', website: '' });
@@ -67,9 +67,9 @@ export function ContactForm() {
   if (status === 'sent') {
     return (
       <div role="status" className="py-10 text-center">
-        <CheckCircle2 className="mx-auto h-12 w-12 text-lime-700" aria-hidden="true" />
+        <CheckCircle2 className="mx-auto h-12 w-12 text-accent" aria-hidden="true" />
         <h2 className="type-h3 mt-4 text-ink">
-          Message <span className="accent-word text-orange-600">received.</span>
+          Message <span className="accent-word text-accent">received.</span>
         </h2>
         <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
           Thanks, {values.name.split(' ')[0]}. I reply within one working day.
@@ -82,7 +82,7 @@ export function ContactForm() {
     return (
       <div role="status" className="py-10 text-center">
         <h2 className="type-h3 text-ink">
-          One more <span className="accent-word text-orange-600">click.</span>
+          One more <span className="accent-word text-accent">click.</span>
         </h2>
         <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
           The form isn’t connected to email right now, so your message wasn’t sent. Open it in your mail app
@@ -98,7 +98,7 @@ export function ContactForm() {
 
   const fieldError = (key: keyof ContactErrors) =>
     errors[key] ? (
-      <p id={`${key}-error`} className="mt-1.5 text-xs font-medium text-orange-700">
+      <p id={`${key}-error`} className="mt-1.5 text-xs font-medium text-accent">
         {errors[key]}
       </p>
     ) : null;
@@ -123,7 +123,7 @@ export function ContactForm() {
           maxLength={CONTACT_LIMITS.nameMax}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? 'name-error' : undefined}
-          className={cn(field, errors.name ? 'border-orange-600' : 'border-line')}
+          className={cn(field, errors.name ? 'border-accent-2' : 'border-line')}
           placeholder="Alex Morgan"
         />
         {fieldError('name')}
@@ -141,14 +141,14 @@ export function ContactForm() {
           onChange={update('email')}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? 'email-error' : undefined}
-          className={cn(field, errors.email ? 'border-orange-600' : 'border-line')}
+          className={cn(field, errors.email ? 'border-accent-2' : 'border-line')}
           placeholder="alex@company.com"
         />
         {fieldError('email')}
       </div>
       <div>
         <label htmlFor="message" className="eyebrow mb-1.5 block text-muted">
-          What are you hiring for?
+          What would you like to talk about?
         </label>
         <textarea
           id="message"
@@ -159,8 +159,8 @@ export function ContactForm() {
           maxLength={CONTACT_LIMITS.messageMax}
           aria-invalid={!!errors.message}
           aria-describedby={errors.message ? 'message-error' : undefined}
-          className={cn(field, 'resize-y', errors.message ? 'border-orange-600' : 'border-line')}
-          placeholder="The role, the team, and what you'd want me to own in the first 90 days."
+          className={cn(field, 'resize-y', errors.message ? 'border-accent-2' : 'border-line')}
+          placeholder="An internship or role, a project question, or anything else."
         />
         {fieldError('message')}
       </div>
@@ -176,7 +176,7 @@ export function ContactForm() {
         />
       </div>
       {serverError && (
-        <p id="form-error" role="alert" className="rounded-xl bg-orange-50 px-4 py-3 text-sm text-orange-800">
+        <p id="form-error" role="alert" className="rounded-xl bg-raised px-4 py-3 text-sm text-accent">
           {serverError}{' '}
           <a href={mailto} className="font-semibold underline">
             Email me instead

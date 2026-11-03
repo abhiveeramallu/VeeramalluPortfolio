@@ -10,20 +10,55 @@ function watchErrors(page: Page) {
   return errors;
 }
 
-test.beforeEach(async ({ page }) => {
-  // Skip the once-per-session preloader so tests start on the content.
-  await page.addInitScript(() => sessionStorage.setItem('pl', '1'));
-});
-
-test('home loads with hero, proof and CTAs', async ({ page }) => {
+test('home shows name, intro, CTAs and every project in HTML', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('I design products');
-  await expect(page.getByText('Available for full-time roles').first()).toBeVisible();
-  await expect(page.getByRole('link', { name: /see my work/i })).toBeVisible();
-  await expect(page.getByRole('link', { name: /download résumé/i })).toHaveAttribute('href', '/resume.pdf');
-  await page.waitForTimeout(500);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Veeramallu Sai Abhiram');
+  await expect(page.getByText('I build AI systems').first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /explore projects/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: /résumé/i }).first()).toHaveAttribute('href', '/resume.pdf');
+  await expect(page.locator('article[id^="project-"]')).toHaveCount(9);
+  await expect(page.getByRole('img', { name: /Illustration for RouteFusion/ }).first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /GitHub repository for RouteFusion/ }).first()).toHaveAttribute(
+    'href',
+    'https://github.com/abhiveeramallu/RouteFusion',
+  );
+  await page.waitForTimeout(1500);
   expect(errors).toEqual([]);
+});
+
+test('the playground is gone', async ({ page, request }) => {
+  expect((await request.get('/playground')).status()).toBe(404);
+  expect((await request.get('/playground/flow-gradient')).status()).toBe(404);
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: /playground/i })).toHaveCount(0);
+});
+
+test('every project has its own illustration and no WebGL is loaded', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await page.mouse.move(300, 300);
+  await expect(page.locator('#projects .pop')).toHaveCount(9);
+  await expect(page.getByRole('img', { name: /Illustration for ThreatLensAI/ })).toBeVisible();
+  await page.waitForTimeout(800);
+  await expect(page.locator('canvas')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test('reduced motion keeps every illustration and all content', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await expect(page.getByRole('img', { name: /Illustration for RouteFusion/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'ThreatLensAI' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Say hello/ })).toBeAttached();
+});
+
+test('hero shows a single comic character in a 3D pop-up card, not a photo', async ({ page }) => {
+  await page.goto('/');
+  const hero = page.getByRole('img', { name: /Let’s build!/ });
+  await expect(hero).toBeVisible();
+  await expect(hero.locator('svg')).toHaveCount(3); // back, mid and front layers
+  expect((await page.request.get('/me/photo.png')).status()).toBe(404);
 });
 
 test('skip link moves focus to main content', async ({ page, isMobile }) => {
@@ -38,11 +73,10 @@ test('skip link moves focus to main content', async ({ page, isMobile }) => {
 
 test('navigation reaches every top-level page', async ({ page, isMobile }) => {
   const errors = watchErrors(page);
-  await page.goto('/');
+  await page.goto('/about');
   for (const [name, path, heading] of [
-    ['Work', '/work', /untangled/],
-    ['About', '/about', /engineer/],
-    ['Playground', '/playground', /learn/],
+    ['About', '/about', /Abhiram/],
+    ['Contact', '/contact', /talk/],
   ] as const) {
     if (isMobile) await page.getByRole('button', { name: 'Open menu' }).click();
     await page
@@ -54,43 +88,40 @@ test('navigation reaches every top-level page', async ({ page, isMobile }) => {
     await expect(page).toHaveURL(path);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
   }
+  await page.goto('/work');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('archive');
   expect(errors).toEqual([]);
 });
 
-test('case study renders the full story', async ({ page }) => {
+test('case study renders the full structure with real links', async ({ page }) => {
   const errors = watchErrors(page);
-  await page.goto('/work/routefusion');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('RouteFusion');
+  await page.goto('/work/threatlens-ai');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('ThreatLensAI');
   for (const id of [
-    'tldr',
+    'overview',
     'problem',
-    'constraints',
-    'process',
+    'goals',
+    'contribution',
+    'architecture',
+    'implementation',
     'decisions',
-    'solution',
-    'outcome',
-    'retro',
+    'challenges',
+    'status',
+    'limitations',
+    'learned',
   ]) {
     await expect(page.locator(`#${id}`)).toBeAttached();
   }
-  await expect(page.getByRole('slider')).toBeAttached(); // before/after
+  await expect(page.getByText('50% (4 of 8)')).toBeVisible();
+  await expect(page.getByRole('link', { name: /Live demo/ }).first()).toHaveAttribute(
+    'href',
+    'https://threatlensai-atzs.onrender.com/',
+  );
   await expect(page.getByRole('navigation', { name: 'Next project' })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('lightbox opens, navigates with keys and closes on Escape', async ({ page }) => {
-  await page.goto('/work/routefusion');
-  await page
-    .getByRole('button', { name: /^Enlarge:/ })
-    .first()
-    .click({ force: true });
-  const dialog = page.getByRole('dialog', { name: /Image viewer/ });
-  await expect(dialog).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(dialog).toBeHidden();
-});
-
-test('contact form validates before sending', async ({ page }) => {
+test('contact form validates and reports delivery honestly', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/contact');
   await page.getByRole('button', { name: 'Send message' }).click();
@@ -100,35 +131,35 @@ test('contact form validates before sending', async ({ page }) => {
 
   await page.getByLabel('Name').fill('Alex Morgan');
   await page.getByLabel('Email').fill('alex@company.com');
-  await page.getByLabel(/hiring for/).fill('We are hiring a design engineer for our platform team.');
+  await page.getByLabel(/talk about/).fill('We have an internship opening on our platform team.');
   await page.getByRole('button', { name: 'Send message' }).click();
-  // No RESEND_API_KEY in tests → honest fallback to the mail app.
+  // No RESEND_API_KEY in tests → honest fallback to the mail app, never a fake "sent".
   await expect(page.getByRole('link', { name: /open in mail app/i })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('chat streams a grounded answer without an API key', async ({ page }) => {
-  await page.goto('/');
+test('chat answers from content without an API key', async ({ page }) => {
+  await page.goto('/contact');
   await page.getByRole('button', { name: /ask me anything/i }).click();
   const dialog = page.getByRole('dialog', { name: /Ask about/ });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole('button', { name: 'Are you available?' }).click();
-  await expect(dialog.getByText(/hello@/).first()).toBeVisible({ timeout: 10_000 });
+  await dialog.getByRole('button', { name: 'How can I contact you?' }).click();
+  await expect(dialog.getByText(/abhiram97137@gmail\.com/).first()).toBeVisible({ timeout: 10_000 });
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
 });
 
 test('command palette opens with "?" and navigates', async ({ page, isMobile }) => {
   test.skip(isMobile, 'keyboard shortcut');
-  await page.goto('/');
+  await page.goto('/about');
   // Palette and chat hydrate together as lazy islands; wait for them before using the shortcut.
   await expect(page.getByRole('button', { name: /ask me anything/i })).toBeVisible();
   await page.locator('body').press('?');
   const palette = page.getByRole('dialog', { name: 'Command palette' });
   await expect(palette).toBeVisible();
-  await page.keyboard.type('threat');
+  await page.keyboard.type('imageguard');
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL('/work/threatlens-ai');
+  await expect(page).toHaveURL('/work/imageguard');
 });
 
 test('résumé, sitemap and OG image are served', async ({ request }) => {
@@ -136,14 +167,14 @@ test('résumé, sitemap and OG image are served', async ({ request }) => {
   expect(pdf.headers()['content-type']).toContain('application/pdf');
   const sitemap = await (await request.get('/sitemap.xml')).text();
   expect(sitemap).toContain('/work/routefusion');
-  expect(sitemap).toContain('/playground/flow-gradient');
+  expect(sitemap).not.toContain('playground');
   const og = await request.get('/opengraph-image');
   expect(og.headers()['content-type']).toContain('image/png');
 });
 
-test('404 page sells the best work', async ({ page }) => {
+test('404 page leads back to the archive', async ({ page }) => {
   const res = await page.goto('/definitely-not-a-page');
   expect(res?.status()).toBe(404);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('wrong turn');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('missing');
   await expect(page.getByRole('link', { name: /RouteFusion/ }).first()).toBeVisible();
 });

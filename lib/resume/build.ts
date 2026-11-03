@@ -9,13 +9,13 @@ const hex = (h: string) => {
 };
 
 const C = {
-  ink: hex('#111111'),
-  muted: hex('#5E5E59'),
-  line: hex('#E4E0D8'),
-  orange: hex('#FF5A1F'),
-  orangeText: hex('#BD3D0C'),
-  bg: hex('#F6F4EF'),
-  lime: hex('#C6F432'),
+  ink: hex('#171811'),
+  muted: hex('#5C5A50'),
+  line: hex('#DDD8C4'),
+  deep: hex('#171811'),
+  ice: hex('#F4F0DE'),
+  accent: hex('#E5C542'),
+  accentText: hex('#20594F'),
 };
 
 // A4 in points.
@@ -71,7 +71,7 @@ class Writer {
       y: this.y - 8,
       size: 8,
       font: this.fonts.mono,
-      color: C.orangeText,
+      color: C.accentText,
     });
     this.page.drawLine({
       start: { x: M + 110, y: this.y - 5 },
@@ -89,7 +89,7 @@ export async function buildResumePdf(): Promise<Uint8Array> {
   doc.setTitle(`${SITE_CONFIG.name} — Résumé`);
   doc.setAuthor(SITE_CONFIG.name);
   doc.setSubject(SITE_CONFIG.role);
-  doc.setKeywords(['product design', 'design engineering', 'résumé']);
+  doc.setKeywords(['software engineering', 'machine learning', 'résumé']);
   doc.setCreator(SITE_URL);
 
   const page = doc.addPage([W, H]);
@@ -100,15 +100,15 @@ export async function buildResumePdf(): Promise<Uint8Array> {
   };
 
   // Header band
-  page.drawRectangle({ x: 0, y: H - 132, width: W, height: 132, color: C.ink });
-  page.drawRectangle({ x: 0, y: H - 136, width: W, height: 4, color: C.orange });
-  page.drawText(toWinAnsi(SITE_CONFIG.name), { x: M, y: H - 70, size: 30, font: fonts.bold, color: C.bg });
+  page.drawRectangle({ x: 0, y: H - 132, width: W, height: 132, color: C.deep });
+  page.drawRectangle({ x: 0, y: H - 135, width: W, height: 3, color: C.accent });
+  page.drawText(toWinAnsi(SITE_CONFIG.name), { x: M, y: H - 70, size: 26, font: fonts.bold, color: C.ice });
   page.drawText(toWinAnsi(SITE_CONFIG.role), {
     x: M,
     y: H - 92,
     size: 12,
     font: fonts.regular,
-    color: C.orange,
+    color: C.accent,
   });
   const contact = [
     SITE_CONFIG.email,
@@ -116,47 +116,42 @@ export async function buildResumePdf(): Promise<Uint8Array> {
     SITE_CONFIG.location,
     SITE_CONFIG.socials.github.replace(/^https?:\/\//, ''),
   ].join('   ·   ');
-  page.drawText(toWinAnsi(contact), { x: M, y: H - 114, size: 8.5, font: fonts.mono, color: hex('#C9C7C0') });
-
-  // Availability chip
-  const chip = toWinAnsi(`${SITE_CONFIG.status} ${SITE_CONFIG.availability}`);
-  const chipW = fonts.bold.widthOfTextAtSize(chip, 8) + 20;
-  page.drawRectangle({ x: W - M - chipW, y: H - 76, width: chipW, height: 18, color: C.lime });
-  page.drawText(chip, { x: W - M - chipW + 10, y: H - 70.5, size: 8, font: fonts.bold, color: C.ink });
+  page.drawText(toWinAnsi(contact), { x: M, y: H - 114, size: 8.5, font: fonts.mono, color: hex('#D6D1BC') });
 
   const w = new Writer(page, fonts, H - 150);
-  w.text(SITE_CONFIG.subline, { size: 10.5, color: C.ink, leading: 1.45 });
+  w.text(SITE_CONFIG.subline, { size: 10, color: C.ink, leading: 1.45 });
 
-  w.section('Selected work');
-  for (const p of SITE_CONFIG.projects.slice(0, 4)) {
-    w.gap(4);
-    w.text(`${p.title}  —  ${p.role}, ${p.year}`, { font: 'bold', size: 10.5 });
-    w.text(p.tagline, { color: C.muted });
-    const metrics = p.metrics
-      .slice(0, 3)
-      .map((m) => `${m.value} ${m.label.toLowerCase()}`)
-      .join('   ·   ');
-    w.text(metrics, { font: 'mono', size: 8, color: C.orangeText });
+  w.section('Education');
+  for (const j of SITE_CONFIG.journey) {
+    w.gap(2);
+    w.text(`${j.title} — ${j.org}`, { font: 'bold', size: 10 });
+    w.text(j.period, { font: 'mono', size: 8, color: C.muted });
   }
 
-  w.section('Experience & education');
-  for (const j of SITE_CONFIG.journey) {
+  w.section('Projects');
+  for (const p of SITE_CONFIG.projects.slice(0, 6)) {
     w.gap(3);
-    w.text(`${j.role}, ${j.company}`, { font: 'bold', size: 10 });
-    w.text(`${j.period} · ${j.location}`, { font: 'mono', size: 8, color: C.muted });
-    w.text(j.description, { color: C.ink });
+    w.text(`${p.title}  —  ${p.category} · ${p.status}`, { font: 'bold', size: 10 });
+    w.text(p.summary, { color: C.ink, size: 9 });
+    w.text(`${p.stack.slice(0, 6).join(' · ')}   |   ${p.repoUrl.replace(/^https:\/\//, '')}`, {
+      font: 'mono',
+      size: 7.5,
+      color: C.accentText,
+    });
   }
 
   w.section('Skills');
-  w.text([...SITE_CONFIG.skillsRow1, ...SITE_CONFIG.skillsRow2].join(' · '), { leading: 1.5 });
+  for (const g of SITE_CONFIG.skills) {
+    w.text(`${g.group}: ${g.items.join(', ')}`, { size: 9, leading: 1.45 });
+  }
 
-  w.section('Tools');
-  w.text(SITE_CONFIG.tools.map((t) => t.name).join(' · '));
+  // The résumé must stay on one page; fail the build (and the unit test) instead of overprinting the footer.
+  if (w.y < 60) throw new Error(`Résumé content overflows the page (y=${w.y.toFixed(0)})`);
 
   // Footer
   page.drawLine({ start: { x: M, y: 46 }, end: { x: W - M, y: 46 }, thickness: 0.6, color: C.line });
   page.drawText(
-    toWinAnsi(`Case studies, process and live demos: ${SITE_URL.replace(/^https?:\/\//, '')}/work`),
+    toWinAnsi(`Case studies, sources and live demos: ${SITE_URL.replace(/^https?:\/\//, '')}/work`),
     {
       x: M,
       y: 32,

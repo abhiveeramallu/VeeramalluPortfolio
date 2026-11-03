@@ -7,8 +7,8 @@ export const contentType = 'image/png';
 
 export default function Image() {
   return renderOg({
-    eyebrow: `${SITE_CONFIG.status} · ${SITE_CONFIG.availability}`,
+    eyebrow: 'Interactive portfolio · VIT Vellore',
     title: SITE_CONFIG.name,
-    accent: 'designs products and ships them in code.',
+    accent: SITE_CONFIG.tagline,
   });
 }

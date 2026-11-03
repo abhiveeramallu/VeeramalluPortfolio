@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { FileDown } from 'lucide-react';
+import { FileDown, Github } from 'lucide-react';
 import { SITE_CONFIG } from '@/data/content';
 import { ContactForm } from '@/components/ui/ContactForm';
 import { CopyEmail } from '@/components/ui/CopyEmail';
@@ -11,13 +11,13 @@ import { breadcrumbJsonLd } from '@/lib/seo';
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: `Hire ${SITE_CONFIG.name}: ${SITE_CONFIG.status.toLowerCase()} ${SITE_CONFIG.availability}. Reply within one working day.`,
+  description: `Contact ${SITE_CONFIG.name} about internships, roles or any of the projects. Email ${SITE_CONFIG.email} or use the form.`,
   alternates: { canonical: '/contact' },
 };
 
 export default function ContactPage() {
   return (
-    <div data-contact-section className="mx-auto max-w-6xl px-6 pb-24 pt-32 sm:px-12">
+    <div className="mx-auto max-w-[1440px] px-4 pb-24 pt-32 md:px-10 md:pt-40">
       <JsonLd
         data={breadcrumbJsonLd([
           { name: 'Home', path: '/' },
@@ -26,25 +26,25 @@ export default function ContactPage() {
       />
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <p className="eyebrow mb-3 text-orange-600">Contact</p>
-          <h1 className="type-h1 text-ink">
-            Let’s build something <span className="accent-word text-orange-600">good.</span>
+          <p className="label mb-4 text-accent">Contact</p>
+          <h1 className="type-h1">
+            Let’s <span className="accent-word">talk</span>.
           </h1>
-          <p className="mt-5 max-w-md leading-relaxed text-muted">
-            {SITE_CONFIG.status} {SITE_CONFIG.availability}. Tell me about the role and the team — I reply
-            within one working day.
+          <p className="mt-6 max-w-md leading-relaxed text-soft">
+            Internships, roles, collaboration or questions about a project — write to me directly or use the
+            form.
           </p>
-          <dl className="mt-10 space-y-5 font-mono text-sm">
+          <dl className="mt-10 space-y-6 text-sm">
             <div>
-              <dt className="text-xs uppercase tracking-wider text-muted">Local time</dt>
-              <dd className="mt-1 text-ink">
-                <LocalTime /> IST · {SITE_CONFIG.location}
+              <dt className="label text-[10px] text-muted">Email</dt>
+              <dd className="mt-2">
+                <CopyEmail />
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wider text-muted">Prefer email?</dt>
-              <dd className="mt-2">
-                <CopyEmail />
+              <dt className="label text-[10px] text-muted">Local time</dt>
+              <dd className="mt-1 font-mono">
+                <LocalTime /> IST · {SITE_CONFIG.location}
               </dd>
             </div>
           </dl>
@@ -56,13 +56,30 @@ export default function ContactPage() {
               className="btn-secondary"
               download
             >
-              <FileDown className="h-4 w-4" aria-hidden="true" />
-              Résumé
+              <FileDown size={15} aria-hidden /> Résumé
             </TrackedLink>
-            <OpenChatButton className="btn-secondary" label="Ask the AI assistant" />
+            <a
+              href={SITE_CONFIG.socials.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary"
+            >
+              <Github size={15} aria-hidden /> GitHub <span className="sr-only">(opens in a new tab)</span>
+            </a>
+            {SITE_CONFIG.socials.linkedin && (
+              <a
+                href={SITE_CONFIG.socials.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary"
+              >
+                LinkedIn <span className="sr-only">(opens in a new tab)</span>
+              </a>
+            )}
+            <OpenChatButton className="btn-secondary" label="Ask the assistant" />
           </div>
         </div>
-        <div className="relative rounded-card border border-line bg-surface p-6 shadow-card sm:p-10 lg:col-span-7">
+        <div className="frame p-6 sm:p-10 lg:col-span-7">
           <ContactForm />
         </div>
       </div>

@@ -1,5 +1,4 @@
 import { ImageResponse } from 'next/og';
-import { SITE_CONFIG } from '@/data/content';
 
 export function generateImageMetadata() {
   return [
@@ -11,7 +10,7 @@ export function generateImageMetadata() {
 
 const SIZES: Record<string, number> = { small: 32, '192': 192, '512': 512 };
 
-/** Favicon + PWA icons, generated: ink tile, orange initial "A" and a lime dot. */
+/** Favicon + PWA icons, generated: olive tile with a cut-paper sun, leaf and coral dot. */
 export default function Icon({ id }: { id: string }) {
   const s = SIZES[id] ?? 32;
   return new ImageResponse(
@@ -23,33 +22,15 @@ export default function Icon({ id }: { id: string }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#111',
+          background: '#171811',
           borderRadius: s * 0.22,
-          position: 'relative',
         }}
       >
-        <div
-          style={{
-            color: '#FF5A1F',
-            fontSize: s * 0.68,
-            fontWeight: 800,
-            lineHeight: 1,
-            marginTop: -s * 0.04,
-          }}
-        >
-          {SITE_CONFIG.shortName[0]}
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            right: s * 0.16,
-            bottom: s * 0.16,
-            width: s * 0.16,
-            height: s * 0.16,
-            borderRadius: s,
-            background: '#C6F432',
-          }}
-        />
+        <svg width={s * 0.66} height={s * 0.66} viewBox="0 0 40 40">
+          <circle cx="27" cy="12" r="7" fill="#e5c542" />
+          <path d="M6 36 C 10 24, 14 20, 17 10 C 21 20, 20 28, 19 36 Z" fill="#328477" />
+          <circle cx="26" cy="27" r="7" fill="#e98b72" />
+        </svg>
       </div>
     ),
     { width: s, height: s },

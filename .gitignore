@@ -39,3 +39,7 @@ coverage/
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Original full-size photo (contains bystanders); only the cut-out in public/me is published
+/SHA_0330.JPG
+/Dynamic Low-Angle Cartoon Fashion Pose.png

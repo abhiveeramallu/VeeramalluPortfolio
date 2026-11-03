@@ -35,7 +35,7 @@ export function TableOfContents({ items }: { items: { id: string; label: string 
               className={cn(
                 '-ml-px block border-l-2 py-1 pl-3 transition-colors',
                 active === item.id
-                  ? 'border-orange-500 font-semibold text-ink'
+                  ? 'border-accent font-semibold text-ink'
                   : 'border-transparent text-muted hover:text-ink',
               )}
             >

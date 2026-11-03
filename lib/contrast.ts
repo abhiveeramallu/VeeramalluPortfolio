@@ -1,4 +1,4 @@
-/** WCAG 2.x relative luminance + contrast helpers. Shared by the playground tool and the token tests. */
+/** WCAG 2.x relative luminance + contrast helpers, used by the design-token contrast tests. */
 
 export type Rgb = [number, number, number];
 
@@ -47,31 +47,4 @@ export function wcagLevel(ratio: number): WcagLevel {
   if (ratio >= 4.5) return 'AA';
   if (ratio >= 3) return 'AA Large';
   return 'Fail';
-}
-
-/** Mix two colours in sRGB; t=0 → a, t=1 → b. */
-export function mix(a: string, b: string, t: number): string {
-  const ca = hexToRgb(a);
-  const cb = hexToRgb(b);
-  return rgbToHex([0, 1, 2].map((i) => ca[i] + (cb[i] - ca[i]) * t) as Rgb);
-}
-
-/** 50–900 ramp around a base (500). Light steps tint toward white, dark steps shade toward ink. */
-export function tonalRamp(base: string, ink = '#111111'): Record<number, string> {
-  const light: Record<number, number> = { 50: 0.92, 100: 0.84, 200: 0.68, 300: 0.5, 400: 0.26 };
-  const dark: Record<number, number> = { 600: 0.2, 700: 0.38, 800: 0.55, 900: 0.7 };
-  const ramp: Record<number, string> = { 500: base.toUpperCase() };
-  for (const [k, t] of Object.entries(light)) ramp[Number(k)] = mix(base, '#FFFFFF', t);
-  for (const [k, t] of Object.entries(dark)) ramp[Number(k)] = mix(base, ink, t);
-  return ramp;
-}
-
-/** First step in the ramp that reaches the target ratio against `bg`, scanning darker. */
-export function firstAccessibleStep(ramp: Record<number, string>, bg: string, target = 4.5): number | null {
-  const steps = Object.keys(ramp)
-    .map(Number)
-    .sort((a, b) => a - b);
-  const bgIsLight = luminance(bg) > 0.5;
-  const ordered = bgIsLight ? steps : [...steps].reverse();
-  return ordered.find((s) => contrastRatio(ramp[s], bg) >= target) ?? null;
 }

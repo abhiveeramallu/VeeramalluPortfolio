@@ -29,7 +29,7 @@ export function CopyEmail({ className }: { className?: string }) {
     >
       <span>{SITE_CONFIG.email}</span>
       {copied ? (
-        <Check className="h-4 w-4 text-lime-700" aria-hidden="true" />
+        <Check className="h-4 w-4 text-accent" aria-hidden="true" />
       ) : (
         <Copy className="h-4 w-4 text-muted" aria-hidden="true" />
       )}

@@ -1,40 +1,39 @@
-# Portfolio audit — 2026-11-02
+# Audit — November 2026 (frozen archive transformation)
 
-Baseline: Next 14.2.15 App Router, builds clean, home first-load JS 153 KB, 18 static pages.
+The previous audit (October 2026 upgrade) is in git history.
 
-## (a) Strong — preserve
+## Repository state before this change
 
-- **Brand system**: warm off-white / ink / orange / indigo / lime tokens as CSS variables, Space Grotesk + Inter + JetBrains Mono + Instrument Serif pairing, serif-italic accent word pattern. Distinctive and not template-looking.
-- **Content model**: everything renders from `data/content.ts`, so copy and projects are editable in one place.
-- **3D hygiene already in place**: R3F scene is `dynamic(ssr:false)`, gated by reduced-motion + WebGL detection, paused offscreen with IntersectionObserver, static SVG fallback.
-- **Real work exists**: RouteFusion (live + repo) and ThreatLens (repo) are genuine, technically interesting projects — strong differentiator for a design engineer.
-- **Playground toys** (Hungarian assignment game, audio pad) show range and personality.
-- Grain overlay, pill navbar with `layoutId` active pill, custom cursor with labels — good tactile layer.
+- Next.js 14 App Router, TypeScript strict, Tailwind, R3F/drei, Framer Motion, Lenis; Vitest + Playwright + GitHub Actions; streaming chat, contact API with honest delivery reporting, pdf-lib résumé, OG images, sitemap/robots/JSON-LD. All of this was working and is preserved.
+- Content: six projects, of which four had no matching repository (Lumina, Kinetic Craft) or were renamed versions of real repositories with unsupported numbers (DocuSense, Aura Flora). Many metrics marked `TODO: verify`.
+- A Playground with five experiments, a design-process section written as product-design research that the repositories don't show, placeholder testimonials, and a warm orange brand.
 
-## (b) Weaknesses, ranked by impact on a recruiter's first 10 seconds
+## GitHub repositories inspected (22)
 
-1. **Hero doesn't sell**: no proof stats, primary CTA is "My journey" (not work), no résumé, availability pill isn't the first thing read. The 3D avatar is built from primitive spheres/cylinders and reads as a toy.
-2. **Project cards look empty**: every card is the same generic fake-browser box with title text; no visual differentiation, uniform 2-col grid, no hierarchy.
-3. **Credibility gaps in copy**: claims a student portfolio can't back ("12+ production client apps", "Awwwards nominee", "+42% brand recall", "adopted across 4 clients"); several projects link to the GitHub profile root, not a repo. Recruiters discount _everything_ once one claim looks inflated.
-4. **Accessibility/contrast failures on the primary brand pairings**: white text on orange buttons ≈ 3.1:1, orange text on off-white ≈ 2.8:1, indigo text on off-white ≈ 4.3:1 — all fail WCAG AA for body/button text. The playground "contrast checker" hard-codes wrong ratios (claims 4.6:1 for white/orange).
-5. **No assets at all in `/public`**: no favicon, OG image, apple/PWA icons; social shares render blank. `public/robots.txt` + `public/sitemap.xml` point at `abhiram.dev` and shadow the dynamic routes at `abhiram.design`.
-6. **Case studies are a wall of text**: no imagery slots, no story structure, no next-step CTA beyond "next project".
-7. **Dead links**: `/playground#soft-sculptor` (toy not implemented), side-project anchors don't target anything.
-8. **Chat**: retired model id, no streaming, no rate limit, no input caps, no injection guardrails; history from client is trusted verbatim.
-9. **Contact API always returns success**, even when nothing is sent — messages silently vanish without `RESEND_API_KEY`. No validation or spam protection.
-10. **Performance/DX**: Google Fonts via render-blocking `<link>`, Lenis RAF loop runs forever, footer clock re-renders every second, `remotePatterns: '**'`, no ESLint/Prettier installed, no tests, no CI, no error boundaries, no analytics.
-11. **Motion is ad-hoc**: easing arrays and durations copy-pasted across files; framer `initial={{opacity:0}}` on the hero H1 delays LCP until hydration.
-12. Modal and chat lack focus traps; mobile menu has no Esc / focus handling; no skip link.
+| Repository                                                                                                                        | Used as                     | Notes                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------ |
+| RouteFusion                                                                                                                       | Case study                  | README + system design; live demo responds                                                             |
+| ThreatlensAI                                                                                                                      | Case study                  | README, METRICS / ADVERSARIAL_TEST / THREAT_MODEL referenced; package.json checked; live demo responds |
+| Image_Guard                                                                                                                       | Case study                  | README; `ImageGuard` is an earlier copy with the same code in a subfolder                              |
+| visionRag                                                                                                                         | Case study                  | README (VisionRAG-X)                                                                                   |
+| Honeypot-Attack-Classification                                                                                                    | Case study                  | README                                                                                                 |
+| EdgeAiThermalManagementUsingStm32                                                                                                 | Case study                  | No README; read `training_summary.txt`, `outputs/*`, `live_uart.py`                                    |
+| GreenHouseMicroClimateForcastingModel                                                                                             | Case study                  | README; live demo responds                                                                             |
+| Smart-Document-Intelligence                                                                                                       | Case study                  | README                                                                                                 |
+| StockMind                                                                                                                         | Case study (in development) | README; created Nov 2026                                                                               |
+| Tickbooking, SignalAppClone, GreenTwin, RegretForecaster, AI-AssistedPolicyManagementSystem, ShadowHunter-Network-Monitoring-Tool | Archive list                | README summaries only                                                                                  |
+| Bot-detection                                                                                                                     | Not listed                  | Earlier version of ThreatLensAI                                                                        |
+| ImageGuard                                                                                                                        | Not listed                  | Duplicate of Image_Guard                                                                               |
+| NewsGroups, Hospital-Data-Management-System-, chatbot-for-PDFs, pythonchatbott                                                    | Not listed                  | Small or early exercises                                                                               |
+| VeeramalluPortfolio                                                                                                               | —                           | This site                                                                                              |
 
-## (c) Upgrade plan
+## Phases executed
 
-| Phase | Scope                                                                                                                                                                                                                                                                |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | This audit, `docs/DECISIONS.md`, tooling (ESLint, Prettier, Vitest) so every later phase is checked                                                                                                                                                                  |
-| 1     | Tokens (tonal scales, fluid type, inverted sections, AA-safe pairings), next/font, hero rewrite (availability, CTAs, proof stats), "currently building" ticker, testimonials (placeholder-gated), sticky Hire-me pill, `/resume.pdf`                                 |
-| 2     | Option **B**: glossy pastel object system that assembles into "A", spring cursor physics, click explode/reform, Lightformer studio env, ContactShadows, PerformanceMonitor, demand frameloop, SVG fallback; scroll-linked CSS objects on Process; pointer-tilt cards |
-| 3     | `<ProjectCover/>` with per-project generated art + real-screenshot override, bento grid, story-structured case study template, TOC, progress bar, lightbox, before/after slider, token inspector, copy rewrite with `// TODO: verify`                                |
-| 4     | `lib/motion.ts`, page transitions, split-line reveals, magnetic buttons, cursor states, scroll progress, Lenis anchor/focus fixes, CSS-only preloader, command palette (`?` / Konami)                                                                                |
-| 5     | Streaming `/api/chat` (SSE) with env model, grounded prompt, citations, rate limit, caps, guardrails, canned FAQ fallback                                                                                                                                            |
-| 6     | `/playground/[slug]` routes, per-experiment OG, blurbs, source links, new GLSL shader experiment, implement the missing sculptor                                                                                                                                     |
-| 7–8   | Metadata/OG/JSON-LD/sitemap/404, analytics + events, error boundaries, Playwright, GitHub Actions, README                                                                                                                                                            |
+1. Audit and content verification — this document; `data/content.ts` rewritten from the repositories.
+2. Playground removal — routes, components, data, tests, SEO, palette, chat, docs.
+3. Design system — frozen palette, type, tokens with contrast tests.
+4. 3D environment — procedural world, scroll-driven camera, artifacts, fallbacks.
+5. Projects — home journey, `/work` index with archive, case-study structure.
+6. About, contact, résumé — rewritten from verified facts.
+7. Performance and accessibility — interaction-triggered WebGL, tiers, culling, reduced motion, scene index.
+8. Validation — typecheck, lint, format, unit, build, Playwright, Lighthouse, manual desktop/mobile review.

@@ -2,22 +2,16 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, ArrowRight, ArrowUpRight, Github } from 'lucide-react';
-import { SITE_CONFIG, getProject, type GalleryItem, type MediaSlot, type ProjectItem } from '@/data/content';
-import { projectMedia } from '@/lib/assets';
-import { blurDataUrl } from '@/lib/blur';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { SITE_CONFIG, getProject } from '@/data/content';
+import { projectIllustration, projectMedia } from '@/lib/assets';
 import { breadcrumbJsonLd, projectJsonLd } from '@/lib/seo';
-import { ProjectCover } from '@/components/work/ProjectCover';
-import { ProjectArt, type ArtScene } from '@/components/work/ProjectArt';
-import { PROVENANCE_STYLE } from '@/components/work/ProjectCard';
 import { ReadingProgress } from '@/components/work/ReadingProgress';
 import { TableOfContents } from '@/components/work/TableOfContents';
-import { Gallery, type GalleryEntry } from '@/components/work/Gallery';
-import { BeforeAfter } from '@/components/work/BeforeAfter';
-import { TokenInspector } from '@/components/work/TokenInspector';
+import { ProjectLinks, StatusChips } from '@/components/work/ProjectMeta';
+import { Illustration } from '@/components/illustrations/Illustration';
+import { ILLUSTRATION_DESCRIPTIONS } from '@/lib/illustrations';
 import { JsonLd } from '@/components/ui/JsonLd';
-import { TrackedLink } from '@/components/ui/TrackedLink';
-import { cn } from '@/lib/utils';
 
 interface PageProps {
   params: { slug: string };
@@ -32,125 +26,45 @@ export const dynamicParams = false;
 export function generateMetadata({ params }: PageProps): Metadata {
   const project = getProject(params.slug);
   if (!project) return {};
-  const title = `${project.title} — ${project.category} case study`;
+  const title = `${project.title} — case study`;
   return {
     title,
-    description: `${project.tagline} ${project.description}`,
+    description: project.summary,
     alternates: { canonical: `/work/${project.slug}` },
-    openGraph: { type: 'article', title, description: project.tagline, url: `/work/${project.slug}` },
-    twitter: { card: 'summary_large_image', title, description: project.tagline },
+    openGraph: { type: 'article', title, description: project.summary, url: `/work/${project.slug}` },
+    twitter: { card: 'summary_large_image', title, description: project.summary },
   };
 }
 
 const TOC = [
-  { id: 'tldr', label: 'TL;DR' },
+  { id: 'overview', label: 'Overview' },
   { id: 'problem', label: 'Problem' },
-  { id: 'constraints', label: 'Constraints' },
-  { id: 'process', label: 'Process' },
-  { id: 'decisions', label: 'Key decisions' },
-  { id: 'solution', label: 'Solution' },
-  { id: 'outcome', label: 'Outcome' },
-  { id: 'retro', label: 'Next time' },
+  { id: 'goals', label: 'Goals & constraints' },
+  { id: 'contribution', label: 'My contribution' },
+  { id: 'architecture', label: 'Architecture' },
+  { id: 'implementation', label: 'Implementation' },
+  { id: 'decisions', label: 'Decisions' },
+  { id: 'challenges', label: 'Challenges' },
+  { id: 'status', label: 'Status & results' },
+  { id: 'limitations', label: 'Limitations' },
+  { id: 'learned', label: 'What I learned' },
 ];
 
-const GALLERY_SCENES: Record<string, ArtScene> = {
-  'gallery-1': 1,
-  'gallery-2': 2,
-  'gallery-3': 'after',
-  'process-1': 1,
-  'process-2': 2,
-  'process-3': 0,
-};
-
-function Media({ project, slot, scene }: { project: ProjectItem; slot: MediaSlot; scene: ArtScene }) {
-  const src = projectMedia(project.slug, slot.id);
-  if (src) {
-    return (
-      <div className="relative aspect-[16/10]">
-        <Image
-          src={src}
-          alt={slot.alt}
-          fill
-          sizes="(min-width: 1024px) 66vw, 100vw"
-          className="object-cover"
-          placeholder="blur"
-          blurDataURL={blurDataUrl(project.color)}
-        />
-      </div>
-    );
-  }
-  return <ProjectCover project={project} scene={scene} alt={`Illustrative mockup: ${slot.alt}`} />;
-}
-
-function toEntry(project: ProjectItem, item: GalleryItem): GalleryEntry {
-  if (item.kind === 'before-after') {
-    return {
-      id: item.id,
-      caption: item.caption,
-      span: 'full',
-      zoomable: false,
-      node: (
-        <BeforeAfter
-          beforeLabel={item.beforeLabel}
-          afterLabel={item.afterLabel}
-          before={
-            <ProjectArt
-              art={project.art}
-              color={project.color}
-              scene="before"
-              label={`Before: ${item.beforeLabel}`}
-              uid={`${project.slug}-before`}
-            />
-          }
-          after={
-            <ProjectArt
-              art={project.art}
-              color={project.color}
-              scene="after"
-              label={`After: ${item.afterLabel}`}
-              uid={`${project.slug}-after`}
-            />
-          }
-        />
-      ),
-    };
-  }
-  if (item.kind === 'token-inspector') {
-    return {
-      id: item.id,
-      caption: item.caption,
-      span: 'full',
-      zoomable: false,
-      node: <TokenInspector slug={project.slug} />,
-    };
-  }
-  return {
-    id: item.id,
-    caption: item.caption,
-    span: item.span,
-    zoomable: true,
-    illustrative: !projectMedia(project.slug, item.id),
-    node: <Media project={project} slot={item} scene={GALLERY_SCENES[item.id] ?? 0} />,
-  };
-}
-
-function Section({
+function Block({
   id,
-  eyebrow,
+  index,
   title,
   children,
-  className,
 }: {
   id: string;
-  eyebrow: string;
-  title: React.ReactNode;
+  index: number;
+  title: string;
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className={cn('scroll-mt-28', className)}>
-      <p className="eyebrow mb-2 text-orange-600">{eyebrow}</p>
-      <h2 id={`${id}-title`} className="type-h3 mb-5 text-ink">
+    <section id={id} aria-labelledby={`${id}-title`} className="border-t border-line py-12">
+      <p className="label mb-3 text-accent">{String(index).padStart(2, '0')}</p>
+      <h2 id={`${id}-title`} className="type-h3 mb-6">
         {title}
       </h2>
       {children}
@@ -158,341 +72,230 @@ function Section({
   );
 }
 
-function MetricRow({ metrics, large = false }: { metrics: ProjectItem['metrics']; large?: boolean }) {
+function Bullets({ items }: { items: string[] }) {
   return (
-    <dl className={cn('grid gap-4', metrics.length >= 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2')}>
-      {metrics.map((m) => (
-        <div key={m.label} className="flex flex-col-reverse rounded-2xl border border-line bg-surface p-5">
-          <dt className="mt-1 text-sm text-muted">
-            {m.label}
-            {m.context && <span className="block font-mono text-[11px]">{m.context}</span>}
-          </dt>
-          <dd
-            className={cn(
-              'font-display font-bold tracking-tight text-ink',
-              large ? 'text-step-4' : 'text-step-2',
-            )}
-          >
-            {m.value}
-          </dd>
-        </div>
+    <ul className="space-y-3">
+      {items.map((item) => (
+        <li key={item} className="flex gap-3 leading-relaxed text-soft">
+          <span aria-hidden className="mt-[0.7em] h-px w-3 shrink-0 bg-accent" />
+          {item}
+        </li>
       ))}
-    </dl>
+    </ul>
   );
 }
 
 export default function CaseStudyPage({ params }: PageProps) {
-  const index = SITE_CONFIG.projects.findIndex((p) => p.slug === params.slug);
-  if (index === -1) notFound();
-  const project = SITE_CONFIG.projects[index];
+  const project = getProject(params.slug);
+  if (!project) notFound();
+  const index = SITE_CONFIG.projects.findIndex((p) => p.slug === project.slug);
   const next = SITE_CONFIG.projects[(index + 1) % SITE_CONFIG.projects.length];
-  const coverSrc = projectMedia(project.slug, 'cover');
+  const cover = projectMedia(project.slug, 'cover');
 
   return (
-    <>
+    <article>
       <JsonLd
         data={[
           projectJsonLd(project),
           breadcrumbJsonLd([
             { name: 'Home', path: '/' },
-            { name: 'Work', path: '/work' },
+            { name: 'Projects', path: '/work' },
             { name: project.title, path: `/work/${project.slug}` },
           ]),
         ]}
       />
-      <ReadingProgress targetId="case-study" />
+      <ReadingProgress targetId="case-body" />
 
-      <article id="case-study" className="pb-24 pt-32">
-        <header className="mx-auto max-w-6xl px-6 sm:px-12">
-          <Link
-            href="/work"
-            className="inline-flex items-center gap-2 font-mono text-xs text-muted hover:text-ink"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-            All work
-          </Link>
-          <div className="mt-6 flex flex-wrap items-center gap-2 font-mono text-xs">
-            <span
-              className={cn('rounded-pill px-3 py-1 font-semibold', PROVENANCE_STYLE[project.provenance])}
-            >
-              {project.provenance}
-            </span>
-            <span className="rounded-pill border border-line bg-surface px-3 py-1 text-ink">
-              {project.category}
-            </span>
-            <span className="text-muted">{project.year}</span>
-          </div>
-          <h1 className="type-display mt-4 text-ink">{project.title}</h1>
-          <p className="mt-4 max-w-3xl font-display text-step-2 font-medium leading-snug text-ink">
-            {project.tagline}
-          </p>
-
-          <dl className="mt-10 grid grid-cols-2 gap-6 border-y border-line py-6 text-sm md:grid-cols-5">
-            {[
-              ['Role', project.role],
-              ['Team', project.team],
-              ['Timeline', project.timeline],
-              ['Tools', project.tools.join(', ')],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <dt className="font-mono text-[11px] uppercase tracking-wider text-muted">{k}</dt>
-                <dd className="mt-1 text-ink">{v}</dd>
+      <header className="mx-auto max-w-[1440px] px-4 pb-12 pt-32 md:px-10 md:pt-40">
+        <Link
+          href="/work"
+          className="label inline-flex min-h-[44px] items-center gap-2 text-soft hover:text-ink"
+        >
+          <ArrowLeft size={14} aria-hidden /> All projects
+        </Link>
+        <div className="mt-6 grid items-end gap-10 lg:grid-cols-[1.1fr_1fr]">
+          <div>
+            <p className="label mb-4 text-accent">
+              Feature {String(index + 1).padStart(2, '0')} · {project.category}
+            </p>
+            <h1 className="type-h1">{project.title}</h1>
+            <StatusChips project={project} className="mt-6" />
+            <p className="mt-6 max-w-xl text-step-1 leading-snug text-soft">{project.summary}</p>
+            <dl className="mt-8 grid max-w-xl grid-cols-2 gap-4 border-t border-line pt-6 text-sm">
+              <div>
+                <dt className="label text-[10px] text-muted">Timeline (repository)</dt>
+                <dd className="mt-1">{project.period}</dd>
               </div>
-            ))}
-            <div className="col-span-2 md:col-span-1">
-              <dt className="font-mono text-[11px] uppercase tracking-wider text-muted">Links</dt>
-              <dd className="mt-1 flex flex-wrap gap-3">
-                {project.liveUrl && (
-                  <TrackedLink
-                    href={project.liveUrl}
-                    external
-                    event="case_study_live_click"
-                    props={{ slug: project.slug }}
-                    className="inline-flex items-center gap-1 font-semibold text-ink underline underline-offset-4"
-                  >
-                    Live site <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </TrackedLink>
-                )}
-                {project.githubUrl && (
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-semibold text-ink underline underline-offset-4"
-                  >
-                    <Github className="h-3.5 w-3.5" aria-hidden="true" /> Code
-                  </a>
-                )}
-              </dd>
+              <div>
+                <dt className="label text-[10px] text-muted">Role</dt>
+                <dd className="mt-1">Sole developer</dd>
+              </div>
+            </dl>
+            <div className="mt-8">
+              <ProjectLinks project={project} showCaseStudy={false} location="case-study" />
             </div>
-          </dl>
-        </header>
-
-        <div className="mx-auto mt-10 max-w-7xl px-4 sm:px-8">
-          <ProjectCover
-            project={project}
-            src={coverSrc}
-            priority
-            sizes="100vw"
-            className="rounded-card border border-line"
-          />
+          </div>
+          {cover ? (
+            <Image
+              src={cover}
+              alt={`${project.title} screenshot`}
+              width={1600}
+              height={1000}
+              priority
+              className="w-full rounded-card border border-line"
+            />
+          ) : (
+            <div className="group">
+              <Illustration
+                priority
+                scene={project.illustration}
+                image={projectIllustration(project.slug)}
+                label={`Illustration for ${project.title}: ${ILLUSTRATION_DESCRIPTIONS[project.illustration]}`}
+              />
+            </div>
+          )}
         </div>
+      </header>
 
-        <div className="mx-auto mt-16 grid max-w-6xl grid-cols-1 gap-12 px-6 sm:px-12 lg:grid-cols-12">
-          <aside className="hidden lg:col-span-3 lg:block">
-            <div className="sticky top-28">
-              <TableOfContents items={TOC} />
-            </div>
-          </aside>
+      <div className="mx-auto grid max-w-[1440px] gap-12 px-4 pb-24 md:px-10 lg:grid-cols-[220px_1fr]">
+        <aside className="hidden lg:block">
+          <div className="sticky top-28">
+            <TableOfContents items={TOC} />
+          </div>
+        </aside>
 
-          <div className="space-y-20 lg:col-span-9">
-            <Section
-              id="tldr"
-              eyebrow="TL;DR"
-              title={
-                <>
-                  The short <span className="accent-word text-orange-600">version.</span>
-                </>
-              }
-            >
-              <p className="mb-8 max-w-2xl text-step-1 leading-relaxed text-ink">{project.description}</p>
-              <MetricRow metrics={project.metrics} large />
-            </Section>
-
-            <Section
-              id="problem"
-              eyebrow="01 · Problem"
-              title={
-                <>
-                  What was <span className="accent-word text-orange-600">broken.</span>
-                </>
-              }
-            >
-              <p className="max-w-2xl text-step-0 leading-relaxed text-muted">{project.problem}</p>
-            </Section>
-
-            <Section
-              id="constraints"
-              eyebrow="02 · Constraints"
-              title={
-                <>
-                  The rules I <span className="accent-word text-orange-600">designed</span> within.
-                </>
-              }
-            >
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {project.constraints.map((c, i) => (
-                  <li
-                    key={c}
-                    className="flex gap-3 rounded-2xl border border-line bg-surface p-4 text-sm leading-relaxed text-ink"
-                  >
-                    <span className="font-mono text-xs font-semibold text-orange-600">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    {c}
+        <div id="case-body" className="max-w-3xl">
+          <section id="overview" aria-labelledby="overview-title" className="pb-12">
+            <p className="label mb-3 text-accent">01</p>
+            <h2 id="overview-title" className="type-h3 mb-6">
+              Overview
+            </h2>
+            <p className="text-step-0 leading-relaxed text-soft">{project.overview}</p>
+            <div className="mt-8">
+              <h3 className="label mb-3 text-muted">Technology stack</h3>
+              <ul className="flex flex-wrap gap-2">
+                {project.stack.map((s) => (
+                  <li key={s} className="chip">
+                    {s}
                   </li>
                 ))}
               </ul>
-            </Section>
+            </div>
+          </section>
 
-            <Section
-              id="process"
-              eyebrow="03 · Process"
-              title={
-                <>
-                  How it <span className="accent-word text-orange-600">came</span> together.
-                </>
-              }
-            >
-              <ol className="space-y-12">
-                {project.process.map((step, i) => (
-                  <li key={step.step} className="grid gap-6 md:grid-cols-5">
-                    <div className="md:col-span-2">
-                      <p className="font-mono text-xs text-muted">Step {i + 1}</p>
-                      <h3 className="mt-1 font-display text-xl font-bold text-ink">{step.step}</h3>
-                      <p className="mt-2 leading-relaxed text-muted">{step.detail}</p>
-                    </div>
-                    {step.media && (
-                      <div className="md:col-span-3">
-                        <Gallery
-                          items={[
-                            {
-                              id: step.media.id,
-                              caption: step.media.caption,
-                              span: 'full',
-                              zoomable: true,
-                              illustrative: !projectMedia(project.slug, step.media.id),
-                              node: (
-                                <Media
-                                  project={project}
-                                  slot={step.media}
-                                  scene={GALLERY_SCENES[step.media.id] ?? 0}
-                                />
-                              ),
-                            },
-                          ]}
-                        />
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </Section>
+          <Block id="problem" index={2} title="The problem">
+            <p className="leading-relaxed text-soft">{project.problem}</p>
+            <h3 className="label mb-2 mt-8 text-muted">Why it matters</h3>
+            <p className="leading-relaxed text-soft">{project.whyItMatters}</p>
+          </Block>
 
-            <Section
-              id="decisions"
-              eyebrow="04 · Key decisions"
-              title={
-                <>
-                  Trade-offs I’d <span className="accent-word text-orange-600">make</span> again.
-                </>
-              }
-            >
-              <div className="space-y-4">
-                {project.decisions.map((d) => (
-                  <div key={d.title} className="rounded-2xl border border-line bg-surface p-6">
-                    <h3 className="font-display text-lg font-bold text-ink">{d.title}</h3>
-                    <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-3">
-                      <div>
-                        <dt className="font-mono text-[11px] uppercase tracking-wider text-lime-800">
-                          Chose
-                        </dt>
-                        <dd className="mt-1 text-ink">{d.chose}</dd>
-                      </div>
-                      <div>
-                        <dt className="font-mono text-[11px] uppercase tracking-wider text-muted">Over</dt>
-                        <dd className="mt-1 text-muted line-through decoration-orange-500/60">{d.over}</dd>
-                      </div>
-                      <div>
-                        <dt className="font-mono text-[11px] uppercase tracking-wider text-muted">Because</dt>
-                        <dd className="mt-1 text-ink">{d.because}</dd>
-                      </div>
-                    </dl>
+          <Block id="goals" index={3} title="Goals and constraints">
+            <div className="grid gap-8 md:grid-cols-2">
+              <div>
+                <h3 className="label mb-4 text-muted">Goals</h3>
+                <Bullets items={project.goals} />
+              </div>
+              <div>
+                <h3 className="label mb-4 text-muted">Constraints</h3>
+                <Bullets items={project.constraints} />
+              </div>
+            </div>
+          </Block>
+
+          <Block id="contribution" index={4} title="My contribution">
+            <p className="leading-relaxed text-soft">{project.contribution}</p>
+          </Block>
+
+          <Block id="architecture" index={5} title="Architecture">
+            <p className="mb-6 leading-relaxed text-soft">{project.architecture.summary}</p>
+            <ol className="relative space-y-3 border-l border-line pl-6">
+              {project.architecture.flow.map((step, i) => (
+                <li key={step} className="relative">
+                  <span
+                    aria-hidden
+                    className="absolute -left-[29px] top-1.5 h-2.5 w-2.5 rotate-45 border border-accent bg-bg"
+                  />
+                  <span className="label mr-3 text-[10px] text-muted">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="font-mono text-sm text-ink">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </Block>
+
+          <Block id="implementation" index={6} title="Implementation">
+            <div className="grid gap-px overflow-hidden rounded-card border border-line bg-line">
+              {project.implementation.map((it) => (
+                <div key={it.title} className="bg-bg p-6">
+                  <h3 className="font-display text-step-1 font-semibold">{it.title}</h3>
+                  <p className="mt-2 leading-relaxed text-soft">{it.body}</p>
+                </div>
+              ))}
+            </div>
+          </Block>
+
+          <Block id="decisions" index={7} title="Important technical decisions">
+            <dl className="space-y-6">
+              {project.decisions.map((d) => (
+                <div key={d.decision} className="grid gap-2 md:grid-cols-[1fr_1.2fr] md:gap-8">
+                  <dt className="font-medium">{d.decision}</dt>
+                  <dd className="leading-relaxed text-soft">{d.because}</dd>
+                </div>
+              ))}
+            </dl>
+          </Block>
+
+          <Block id="challenges" index={8} title="Challenges">
+            <Bullets items={project.challenges} />
+          </Block>
+
+          <Block id="status" index={9} title="Current status and results">
+            <p className="leading-relaxed text-soft">{project.currentStatus}</p>
+            {project.facts.length > 0 && (
+              <dl className="mt-8 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
+                {project.facts.map((f) => (
+                  <div key={f.label} className="flex flex-col-reverse justify-end bg-bg p-5">
+                    <dt className="mt-2 text-sm text-soft">
+                      {f.label}
+                      <span className="label mt-2 block text-[10px] text-muted">Source: {f.source}</span>
+                    </dt>
+                    <dd className="font-display text-step-2 font-semibold">{f.value}</dd>
                   </div>
                 ))}
-              </div>
-            </Section>
+              </dl>
+            )}
+          </Block>
 
-            <Section
-              id="solution"
-              eyebrow="05 · Solution"
-              title={
-                <>
-                  What I <span className="accent-word text-orange-600">shipped.</span>
-                </>
-              }
-            >
-              <p className="max-w-2xl text-step-0 leading-relaxed text-muted">{project.solution}</p>
-            </Section>
-          </div>
+          <Block id="limitations" index={10} title="Limitations">
+            <Bullets items={project.limitations} />
+          </Block>
+
+          <Block id="learned" index={11} title="What I learned">
+            <Bullets items={project.learned} />
+            <div className="mt-10 rounded-card border border-line bg-surface p-6">
+              <p className="label mb-4 text-muted">Source and demo</p>
+              <ProjectLinks project={project} showCaseStudy={false} location="case-study-footer" />
+            </div>
+          </Block>
         </div>
+      </div>
 
-        <div className="mx-auto mt-12 max-w-6xl px-4 sm:px-8">
-          <Gallery items={project.gallery.map((g) => toEntry(project, g))} />
-        </div>
-
-        <div className="mx-auto mt-20 grid max-w-6xl grid-cols-1 gap-12 px-6 sm:px-12 lg:grid-cols-12">
-          <div className="space-y-20 lg:col-span-9 lg:col-start-4">
-            <Section
-              id="outcome"
-              eyebrow="06 · Outcome"
-              title={
-                <>
-                  What <span className="accent-word text-orange-600">changed.</span>
-                </>
-              }
-            >
-              <p className="mb-8 max-w-2xl text-step-0 leading-relaxed text-ink">{project.outcome.summary}</p>
-              <MetricRow metrics={project.outcome.metrics} />
-            </Section>
-
-            <Section
-              id="retro"
-              eyebrow="07 · Retro"
-              title={
-                <>
-                  What I’d do <span className="accent-word text-orange-600">differently.</span>
-                </>
-              }
-            >
-              <ul className="space-y-3">
-                {project.retro.map((r) => (
-                  <li key={r} className="flex gap-3 text-step-0 leading-relaxed text-ink">
-                    <ArrowRight className="mt-1.5 h-4 w-4 shrink-0 text-orange-600" aria-hidden="true" />
-                    {r}
-                  </li>
-                ))}
-              </ul>
-            </Section>
-          </div>
-        </div>
-      </article>
-
-      <nav aria-label="Next project" className="section-inverted px-6 py-20 sm:px-12">
+      <nav aria-label="Next project" className="border-t border-line bg-surface">
         <Link
           href={`/work/${next.slug}`}
-          data-cursor-label="Next"
-          className="group mx-auto grid max-w-6xl items-center gap-8 md:grid-cols-2"
+          className="group mx-auto flex max-w-[1440px] flex-col gap-3 px-4 py-16 md:flex-row md:items-end md:justify-between md:px-10"
         >
           <div>
-            <p className="eyebrow text-orange-500">Next case study</p>
-            <p className="type-h1 mt-3 text-ink">
-              {next.title}{' '}
-              <ArrowRight
-                className="inline h-8 w-8 transition-transform group-hover:translate-x-2"
-                aria-hidden="true"
-              />
-            </p>
-            <p className="mt-3 max-w-md text-muted">{next.tagline}</p>
+            <p className="label text-accent">Next feature</p>
+            <p className="type-h2 mt-3 transition-colors group-hover:text-accent">{next.title}</p>
+            <p className="mt-2 max-w-xl text-soft">{next.summary}</p>
           </div>
-          <ProjectCover
-            project={next}
-            src={projectMedia(next.slug, 'cover')}
-            className="rounded-card"
-            sizes="(min-width: 768px) 50vw, 100vw"
+          <ArrowRight
+            size={36}
+            aria-hidden
+            className="shrink-0 transition-transform group-hover:translate-x-2"
           />
         </Link>
       </nav>
-    </>
+    </article>
   );
 }

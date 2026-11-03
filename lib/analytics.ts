@@ -14,7 +14,8 @@ export type AnalyticsEvent =
   | 'contact_submit'
   | 'email_copy'
   | 'command_palette_open'
-  | 'case_study_live_click';
+  | 'case_study_live_click'
+  | 'repo_click';
 
 export const analyticsEnabled = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true';
 

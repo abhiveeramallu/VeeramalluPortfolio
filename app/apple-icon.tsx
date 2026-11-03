@@ -1,5 +1,4 @@
 import { ImageResponse } from 'next/og';
-import { SITE_CONFIG } from '@/data/content';
 
 export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
@@ -14,22 +13,14 @@ export default function AppleIcon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#111',
-          position: 'relative',
+          background: '#171811',
         }}
       >
-        <div style={{ color: '#FF5A1F', fontSize: 124, fontWeight: 800 }}>{SITE_CONFIG.shortName[0]}</div>
-        <div
-          style={{
-            position: 'absolute',
-            right: 30,
-            bottom: 30,
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            background: '#C6F432',
-          }}
-        />
+        <svg width={118} height={118} viewBox="0 0 40 40">
+          <circle cx="27" cy="12" r="7" fill="#e5c542" />
+          <path d="M6 36 C 10 24, 14 20, 17 10 C 21 20, 20 28, 19 36 Z" fill="#328477" />
+          <circle cx="26" cy="27" r="7" fill="#e98b72" />
+        </svg>
       </div>
     ),
     size,

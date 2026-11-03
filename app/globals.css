@@ -3,97 +3,97 @@
 @tailwind utilities;
 
 /*
- * Design tokens. Tonal scales were generated in OKLCH around the brand hues
- * (500 = brand value). Text-safe pairings are documented in docs/DECISIONS.md and
- * enforced by tests/unit/contrast.test.ts.
+ * Warm editorial palette: dark olive paper, cream type, teal, mustard, coral, dusty blue — plus a few goofy
+ * toy colours used only inside the 3D illustrations. Contrast for every text pairing is asserted in
+ * tests/unit/contrast.test.ts; teal and dusty blue are fills, never small text (their light variants are).
  */
 :root {
-  --bg: #f6f4ef;
-  --surface: #ffffff;
-  --ink: #111111;
-  --muted: #6b6b66;
-  --line: #e4e0d8;
+  --bg: #171811;
+  --surface: #22231b;
+  --raised: #2b2c23;
+  --ink: #f4f0de;
+  --soft: #d6d1bc;
+  --muted: #a9a69a;
+  --night: #171811;
+  --accent: #e5c542;
+  --accent-2: #e98b72;
+  --teal: #328477;
+  --teal-deep: #20594f;
+  --teal-light: #5fb3a3;
+  --blue: #4f85a7;
+  --blue-light: #86b3cf;
 
-  --orange-50: #fff4f1;
-  --orange-100: #ffe7df;
-  --orange-200: #ffcebf;
-  --orange-300: #ffad94;
-  --orange-400: #ff815b;
-  --orange-500: #ff5a1f;
-  --orange-600: #bd3d0c;
-  --orange-700: #942c03;
-  --orange-800: #6c1f04;
-  --orange-900: #471202;
-
-  --indigo-50: #f4f6ff;
-  --indigo-100: #e8ecff;
-  --indigo-200: #d1d9fe;
-  --indigo-300: #b4c0fe;
-  --indigo-400: #94a2ff;
-  --indigo-500: #5b5bff;
-  --indigo-600: #5353ed;
-  --indigo-700: #3f3bc1;
-  --indigo-800: #2c2891;
-  --indigo-900: #1b1664;
-
-  --lime-50: #fafee9;
-  --lime-100: #f3fdcf;
-  --lime-200: #e8fb9f;
-  --lime-300: #dbf86e;
-  --lime-400: #d0f64c;
-  --lime-500: #c6f432;
-  --lime-600: #8fb30a;
-  --lime-700: #617a03;
-  --lime-800: #4b5e08;
-  --lime-900: #354401;
-
-  --accent: var(--orange-500);
-  --accent-2: var(--indigo-500);
-  --accent-3: var(--lime-500);
-
-  --soft-pink: #ffd6e8;
-  --soft-blue: #d6e6ff;
-  --soft-yellow: #fff0c2;
-  --soft-green: #e4f4d6;
-  --soft-purple: #e9e4ff;
-
-  /* Fluid type scale: min @ 375px → max @ 1440px */
-  --step--1: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
-  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
-  --step-1: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem);
-  --step-2: clamp(1.5rem, 1.32rem + 0.75vw, 2rem);
-  --step-3: clamp(2rem, 1.69rem + 1.31vw, 2.875rem);
-  --step-4: clamp(2.5rem, 1.97rem + 2.25vw, 4rem);
-  --step-5: clamp(2.75rem, 1.95rem + 3.4vw, 5rem);
+  /* RGB channels for Tailwind (supports opacity modifiers and scoped themes). */
+  --c-bg: 23 24 17;
+  --c-surface: 34 35 27;
+  --c-raised: 43 44 35;
+  --c-ink: 244 240 222;
+  --c-soft: 214 209 188;
+  --c-muted: 169 166 154;
+  --c-night: 23 24 17;
+  --c-accent: 229 197 66;
+  --c-accent-2: 233 139 114;
+  --c-teal: 50 132 119;
+  --c-teal-deep: 32 89 79;
+  --c-teal-light: 95 179 163;
+  --c-blue: 79 133 167;
+  --c-blue-light: 134 179 207;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Fluid type scale (360px → 1440px). */
+  --step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.875rem);
+  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.12rem + 0.38vw, 1.45rem);
+  --step-2: clamp(1.5rem, 1.3rem + 0.9vw, 2.15rem);
+  --step-3: clamp(2rem, 1.55rem + 2vw, 3.4rem);
+  --step-4: clamp(2.6rem, 1.8rem + 3.6vw, 5.2rem);
+  --step-5: clamp(4.2rem, 1.6rem + 13vw, 15rem);
+
+  color-scheme: dark;
 }
 
-/* Opt-in dark theme (command palette → "Toggle dark theme"). Text-safe steps are remapped lighter. */
-html[data-theme='dark'] {
-  --bg: #111111;
-  --surface: #1b1b1a;
-  --ink: #f6f4ef;
-  --muted: #a3a39c;
-  --line: #2e2e2b;
-  --orange-600: #ff815b;
-  --orange-700: #ffad94;
-  --indigo-600: #94a2ff;
-  --indigo-700: #b4c0fe;
-  --lime-700: #c6f432;
-  --soft-pink: #3a2430;
-  --soft-blue: #1f2a3d;
-  --soft-yellow: #3a321c;
-  --soft-green: #25311d;
-  --soft-purple: #29253f;
-  color-scheme: dark;
+/*
+ * Pop theme (main page), matched to my illustration: hot orange, purple and lavender, cream paper and
+ * near-black ink. Scoped with a class so the other pages keep the dark editorial palette.
+ */
+.theme-pop {
+  --c-bg: 255 243 230;
+  --c-surface: 251 228 207;
+  --c-raised: 245 214 187;
+  --c-ink: 22 18 31;
+  --c-soft: 59 51 70;
+  --c-muted: 101 91 112;
+  --c-night: 255 243 230;
+  --c-accent: 194 65 12;
+  --c-accent-2: 91 63 160;
+  --c-teal: 91 63 160;
+  --c-teal-deep: 42 31 69;
+  --c-teal-light: 91 63 160;
+  --c-blue: 91 63 160;
+  --c-blue-light: 91 63 160;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
+}
+/* A deep-purple panel inside the pop theme (cream text, yellow accent). */
+.panel-ink {
+  --c-bg: 42 31 69;
+  --c-surface: 53 40 87;
+  --c-raised: 64 49 106;
+  --c-ink: 255 243 230;
+  --c-soft: 232 220 242;
+  --c-muted: 199 184 216;
+  --c-night: 42 31 69;
+  --c-accent: 255 178 26;
+  --c-accent-2: 246 160 140;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
 }
 
 html {
   background-color: var(--bg);
   color: var(--ink);
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   -webkit-text-size-adjust: 100%;
 }
 
@@ -116,9 +116,20 @@ body {
   min-height: 100vh;
 }
 
+/* Paper grain over the whole page: a fixed, non-interactive SVG noise layer. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 ::selection {
-  background: var(--orange-500);
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--night);
 }
 
 /* Anchor targets clear the floating navbar. */
@@ -127,166 +138,154 @@ body {
 }
 
 @layer components {
-  /* Headline sizes. Every headline carries exactly one `.accent-word`. */
+  /* Oversized editorial display type (Fraunces, soft and slightly wonky). */
   .type-display {
     font-family: var(--font-display);
     font-size: var(--step-5);
-    line-height: 1.02;
-    letter-spacing: -0.035em;
+    line-height: 0.82;
+    letter-spacing: -0.045em;
     font-weight: 700;
+    font-variation-settings:
+      'SOFT' 100,
+      'WONK' 1;
   }
   .type-h1 {
     font-family: var(--font-display);
     font-size: var(--step-4);
-    line-height: 1.05;
+    line-height: 0.95;
     letter-spacing: -0.03em;
-    font-weight: 700;
+    font-weight: 650;
+    font-variation-settings:
+      'SOFT' 100,
+      'WONK' 1;
   }
   .type-h2 {
     font-family: var(--font-display);
     font-size: var(--step-3);
-    line-height: 1.08;
+    line-height: 1;
     letter-spacing: -0.025em;
-    font-weight: 700;
+    font-weight: 600;
+    font-variation-settings:
+      'SOFT' 100,
+      'WONK' 0;
   }
   .type-h3 {
     font-family: var(--font-display);
     font-size: var(--step-2);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+    font-variation-settings: 'SOFT' 80;
   }
+  /* One italic accent word per headline. */
   .accent-word {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-style: italic;
     font-weight: 400;
-    letter-spacing: -0.01em;
+    font-variation-settings:
+      'SOFT' 100,
+      'WONK' 1;
   }
-  .eyebrow {
+  /* Monospace magazine labels: issue numbers, page numbers, categories. */
+  .label {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-
-  /* Dark "inverted" section variant used for rhythm (Process, Contact). */
-  .section-inverted {
-    --bg: #111111;
-    --surface: #1b1b1a;
-    --ink: #f6f4ef;
-    --muted: #a3a39c;
-    --line: #2e2e2b;
-    background-color: #111111;
-    color: #f6f4ef;
+  .eyebrow {
+    @apply label;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5 font-mono text-sm font-semibold tracking-wide transition-[background-color,color,box-shadow,border-color] duration-300;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-pill px-6 py-3 font-mono text-[0.8rem] font-medium uppercase tracking-[0.08em] transition-[background-color,color,border-color,transform] duration-300;
+  }
+  .btn:active {
+    transform: scale(0.97);
   }
   .btn-primary {
-    @apply btn bg-orange-500 text-[#111] shadow-bloom hover:bg-[#111] hover:text-[#f6f4ef] hover:shadow-none;
+    @apply btn bg-accent text-night hover:bg-ink;
   }
   .btn-secondary {
-    @apply btn border border-line bg-surface text-ink shadow-soft hover:border-ink;
+    @apply btn border border-line text-ink hover:border-ink;
   }
-  .btn-ghost-inverted {
-    @apply btn border border-[#3a3a36] text-[#f6f4ef] hover:border-[#f6f4ef];
+  .btn-cream {
+    @apply btn bg-ink text-night hover:bg-accent;
   }
-}
 
-/* Tactile grain */
-.grain-overlay {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events: none;
-}
+  .chip {
+    @apply inline-flex items-center rounded-pill border border-line px-3 py-1 font-mono text-[0.72rem] text-soft;
+  }
 
-.marquee-container:hover .marquee-track,
-.marquee-container:focus-within .marquee-track {
-  animation-play-state: paused;
+  .frame {
+    @apply relative rounded-card border border-line bg-surface;
+  }
 }
 
 :focus-visible {
-  outline: 2px solid var(--indigo-500);
+  outline: 2px solid rgb(var(--c-accent));
   outline-offset: 3px;
-  border-radius: 4px;
-}
-.section-inverted :focus-visible {
-  outline-color: var(--lime-500);
+  border-radius: 6px;
 }
 
-/* ---------- Preloader (first visit per session; see components/ui/Preloader.tsx) ---------- */
-.preloader {
-  display: none;
+/* Floating paper cut-outs around compositions, moved by pointer parallax (--px/--py set by script). */
+.float-layer {
+  transform: translate3d(
+    calc(var(--px, 0) * var(--depth, 10) * 1px),
+    calc(var(--py, 0) * var(--depth, 10) * 1px),
+    0
+  );
+  transition: transform 0.5s var(--ease-out);
 }
-html[data-preload] .preloader {
-  display: flex;
-  animation: preloader-out 0.45s var(--ease-in-out) 0.75s forwards;
-}
-html[data-preload] .preloader-bar {
-  animation: preloader-bar 0.75s var(--ease-out) forwards;
-}
-@keyframes preloader-out {
-  to {
-    transform: translateY(-100%);
-    visibility: hidden;
+@keyframes drift {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  50% {
+    translate: 0 -10px;
+    rotate: 6deg;
   }
 }
-@keyframes preloader-bar {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
+.drift {
+  animation: drift var(--dur, 7s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
 }
 
-/* Hero entrance — CSS so it starts at first paint (no hydration wait for LCP). */
-.hero-in {
-  animation: hero-in 0.8s var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 80ms);
+/* Entrance: elements pop in when their section first enters the viewport (see components/art/Reveal). */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px) rotate(var(--reveal-rot, -1.5deg));
+  transition:
+    opacity 0.7s var(--ease-out),
+    transform 0.9s var(--ease-spring);
+  transition-delay: var(--reveal-delay, 0ms);
 }
-html[data-preload] .hero-in {
-  animation-delay: calc(1.05s + var(--i, 0) * 80ms);
+.js [data-reveal][data-inview='true'] {
+  opacity: 1;
+  transform: none;
 }
-@keyframes hero-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-}
-/* The H1 never starts invisible: it slides only, so it can be the LCP at first paint. */
+
+/* Hero entrance: transform only, so the H1 can be the LCP element at first paint. */
 .hero-line {
-  display: block;
-  animation: hero-line 0.9s var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 70ms);
-}
-html[data-preload] .hero-line {
-  animation-delay: calc(1s + var(--i, 0) * 70ms);
+  display: inline-block;
+  animation: hero-line 1.1s var(--ease-spring) both;
 }
 @keyframes hero-line {
   from {
-    transform: translateY(0.35em);
+    transform: translateY(0.18em) rotate(-2deg);
   }
 }
-
-@keyframes pulse-ring {
-  0% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(2.6);
+.hero-in {
+  animation: hero-in 0.9s var(--ease-out) both;
+}
+@keyframes hero-in {
+  from {
+    transform: translateY(16px);
     opacity: 0;
   }
-}
-.pulse-dot::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  background: inherit;
-  animation: pulse-ring 1.8s var(--ease-out) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -299,19 +298,395 @@ html[data-preload] .hero-line {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  html[data-preload] .preloader {
-    display: none;
-  }
 }
 
 @media print {
   .no-print,
   header,
   footer,
-  .grain-overlay {
+  canvas {
     display: none !important;
   }
-  body {
-    background: #fff;
+  body::after {
+    display: none;
   }
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+}
+
+/* Flat botanical cut-outs sway from their stems. */
+@keyframes sway {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 4deg;
+  }
+}
+.sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: sway var(--dur, 6s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Pop theme type: heavy slab headlines with an offset ink shadow. */
+.theme-pop .type-display,
+.theme-pop .type-h1,
+.theme-pop .type-h2 {
+  font-family: var(--font-slab);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-variation-settings: normal;
+}
+.ink-shadow {
+  text-shadow: 0.05em 0.05em 0 rgb(var(--c-ink));
+}
+
+/* Halftone dot field used behind compositions. */
+.halftone {
+  background-image: radial-gradient(rgb(var(--c-accent-2) / 0.35) 28%, transparent 30%);
+  background-size: 14px 14px;
+}
+
+/* Portrait reveal: the illustrated layer shows through a circle that follows the pointer. */
+.reveal-layer {
+  -webkit-mask-image: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 30%),
+    #000 calc(var(--r, 0px) - 1px),
+    transparent var(--r, 0px)
+  );
+  mask-image: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 30%),
+    #000 calc(var(--r, 0px) - 1px),
+    transparent var(--r, 0px)
+  );
+}
+.reveal-ring {
+  left: var(--mx, 50%);
+  top: var(--my, 30%);
+  width: calc(var(--r, 0px) * 2);
+  height: calc(var(--r, 0px) * 2);
+  translate: -50% -50%;
+}
+@keyframes spin-slow {
+  to {
+    rotate: 360deg;
+  }
+}
+.spin-slow {
+  animation: spin-slow 14s linear infinite;
+}
+
+/* ───────── Hero 3D stage ───────── */
+.hero-stage {
+  perspective: 1100px;
+  perspective-origin: 50% 40%;
+}
+.hero-stage-inner {
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(var(--sink, 0px));
+}
+.hero-depth {
+  transform: translateZ(var(--z, 0px));
+  transform-style: preserve-3d;
+}
+.portrait-art,
+.portrait-burst {
+  clip-path: circle(var(--r, 0px) at var(--mx, 50%) var(--my, 35%));
+}
+.portrait-photo {
+  opacity: calc(1 - var(--p, 0));
+  transform: scale(calc(1 - var(--p, 0) * 0.08));
+  transform-origin: 50% 100%;
+}
+.portrait-ring {
+  left: var(--mx, 50%);
+  top: var(--my, 35%);
+  width: calc(var(--r, 0px) * 2);
+  height: calc(var(--r, 0px) * 2);
+  translate: -50% -50%;
+  opacity: clamp(0, min(calc(var(--p, 0) * 25), calc((1 - var(--p, 0)) * 5)), 1);
+}
+
+/* ───────── Pop-up illustrations (components/illustrations) ───────── */
+@property --rx {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --ry {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+.pop {
+  --rx: 7deg;
+  --ry: -13deg;
+  perspective: 1000px;
+  animation: pop-rest 9s ease-in-out infinite;
+}
+.pop[data-side='left'] {
+  --ry: 13deg;
+  animation-name: pop-rest-left;
+}
+.pop[data-tilting='true'] {
+  animation: none;
+}
+@keyframes pop-rest {
+  0%,
+  100% {
+    --ry: -13deg;
+    --rx: 7deg;
+  }
+  50% {
+    --ry: -5deg;
+    --rx: 4deg;
+  }
+}
+@keyframes pop-rest-left {
+  0%,
+  100% {
+    --ry: 13deg;
+    --rx: 7deg;
+  }
+  50% {
+    --ry: 5deg;
+    --rx: 4deg;
+  }
+}
+.pop-card {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.45s var(--ease-out);
+}
+.pop-plane {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 26px;
+  border: 2px solid rgb(var(--c-ink));
+  box-shadow: 10px 12px 0 0 rgb(var(--c-ink) / 0.9);
+}
+.pop-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.pop-layer--back,
+.pop-layer--mid {
+  /* Backgrounds and props stay inside the card; only the front layer may pop out past its edge. */
+  clip-path: inset(0 round 26px);
+}
+.pop-layer--back {
+  transform: translateZ(14px);
+  filter: drop-shadow(0 4px 0 rgb(31 29 43 / 0.16));
+}
+.pop-layer--mid {
+  transform: translateZ(42px);
+  filter: drop-shadow(0 5px 0 rgb(31 29 43 / 0.2));
+}
+.pop-layer--front {
+  transform: translateZ(76px);
+  filter: drop-shadow(0 7px 0 rgb(31 29 43 / 0.24));
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop {
+    animation: none;
+  }
+}
+
+/* ───────── Flat illustrations: part animations ───────── */
+.illustration .peep {
+  animation: peep-bob 4s ease-in-out infinite;
+}
+.group:hover .illustration .peep,
+.group:focus-within .illustration .peep {
+  animation: peep-hop 0.7s var(--ease-spring) infinite alternate;
+}
+@keyframes peep-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
+}
+@keyframes peep-hop {
+  from {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  to {
+    translate: 0 -9px;
+    rotate: -2deg;
+  }
+}
+.illustration .sway-leaves {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: sway 5s ease-in-out infinite;
+}
+.illustration .spin {
+  animation: spin-slow 3s linear infinite;
+}
+.group:hover .illustration .hover-spin {
+  animation-duration: 0.6s;
+}
+.illustration .hover-shift {
+  transition: transform 0.9s var(--ease-spring);
+}
+.group:hover .illustration .hover-shift,
+.group:focus-within .illustration .hover-shift {
+  transform: translate(var(--dx, 0), var(--dy, 0));
+}
+.illustration .hover-show {
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out);
+}
+.group:hover .illustration .hover-show,
+.group:focus-within .illustration .hover-show {
+  opacity: 1;
+}
+.illustration .buzz {
+  animation: buzz 2.4s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+.group:hover .illustration .buzz {
+  animation-duration: 0.9s;
+}
+@keyframes buzz {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: 6px -5px;
+  }
+  50% {
+    translate: -4px -9px;
+  }
+  75% {
+    translate: -7px 2px;
+  }
+}
+.illustration .heat path {
+  animation: heat 1.8s ease-in-out infinite;
+}
+@keyframes heat {
+  0%,
+  100% {
+    translate: 0 0;
+    opacity: 1;
+  }
+  50% {
+    translate: 0 -6px;
+    opacity: 0.5;
+  }
+}
+.illustration .mercury {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mercury 4s ease-in-out infinite;
+}
+@keyframes mercury {
+  0%,
+  100% {
+    scale: 1 0.55;
+  }
+  50% {
+    scale: 1 1;
+  }
+}
+.illustration .rain {
+  animation: rain 0.8s linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes rain {
+  from {
+    translate: 0 -6px;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  to {
+    translate: -3px 14px;
+    opacity: 0;
+  }
+}
+.illustration .scan {
+  animation: scan 2.4s ease-in-out infinite alternate;
+}
+@keyframes scan {
+  to {
+    translate: 0 64px;
+  }
+}
+.illustration .bob {
+  animation: drift 4s ease-in-out infinite;
+}
+.illustration .blink-light {
+  animation: blink-light 1.2s steps(2) infinite;
+}
+@keyframes blink-light {
+  50% {
+    opacity: 0.15;
+  }
+}
+.illustration .plane {
+  animation: plane 4s ease-in-out infinite;
+}
+.group:hover .illustration .plane {
+  animation-duration: 1.6s;
+}
+@keyframes plane {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  50% {
+    translate: -26px 18px;
+    rotate: -8deg;
+  }
+}
+.illustration .typing-lines {
+  animation: blink-light 0.9s steps(2) infinite;
+}
+.illustration .drift {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+/* Comic panel devices. */
+.illustration .burst {
+  animation: burst-pulse 3.2s ease-in-out infinite;
+}
+@keyframes burst-pulse {
+  0%,
+  100% {
+    scale: 1;
+    rotate: 0deg;
+  }
+  50% {
+    scale: 1.04;
+    rotate: 4deg;
+  }
+}
+.illustration .bubble {
+  transition: scale 0.5s var(--ease-spring);
+}
+.group:hover .illustration .bubble,
+.group:focus-within .illustration .bubble {
+  scale: 1.08;
 }

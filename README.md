@@ -1,14 +1,13 @@
 # abhiram.design — portfolio
 
-Personal portfolio of Sai Abhiram, product designer & design engineer. Next.js 14 (App Router), TypeScript, Tailwind, React Three Fiber + drei, Framer Motion, Lenis.
+Portfolio of Veeramallu Sai Abhiram, Computer Science student at VIT Vellore (expected 2027). Next.js 14 (App Router), TypeScript, Tailwind, React Three Fiber + drei, Framer Motion, Lenis.
 
-- **Home**: hero with availability, proof stats and CTAs; a WebGL object system that assembles into "A"; bento case studies; inverted Process section; playground; contact.
-- **Case studies** (`/work/[slug]`): TL;DR → problem → constraints → process → decisions → gallery (lightbox, before/after slider, token inspector) → outcome → retro → next.
-- **Playground** (`/playground/[slug]`): GLSL flow gradient, Hungarian assignment game, contrast-ramp tool, Web Audio synth, clay material toy.
-- **AI assistant**: streaming, grounded in `data/content.ts`, works without an API key.
-- **Extras**: command palette (`?`, ⌘K or the Konami code), `/resume.pdf` generated from content, dynamic OG images, opt-in dark theme.
+The main page is a bright editorial poster illustrated as comic panels: hand-drawn characters from [Open Peeps](https://www.openpeeps.com) (CC0) with a coloured "misprint" shadow, starbursts, halftone dots, speed lines and lettered speech bubbles. The hero shows a single protagonist; each project panel acts out what the project does. Every panel is presented in 3D like a pop-up book — three depth layers that separate as it turns towards the pointer — and parts animate on hover.
 
-Design and engineering decisions are in [docs/DECISIONS.md](docs/DECISIONS.md); the pre-upgrade audit is in [docs/AUDIT.md](docs/AUDIT.md).
+- **Home**: magazine-cover hero, an "In this issue" contents list, a feature spread per project, an illustrated about section and contact.
+- **Projects** (`/work`, `/work/[slug]`): an index of every project plus smaller repositories, and case studies structured as overview → problem → goals & constraints → contribution → architecture → implementation → decisions → challenges → status & results → limitations → what I learned → next project.
+- **Honesty**: all project facts come from each GitHub repository; numbers cite the file they came from. See [docs/DECISIONS.md](docs/DECISIONS.md) and [docs/AUDIT.md](docs/AUDIT.md).
+- **Extras**: streaming AI assistant grounded in `data/content.ts` (works without an API key), command palette (`?` or ⌘K), `/resume.pdf` generated from content, dynamic OG images.
 
 ## Setup
 
@@ -25,10 +24,22 @@ npm run dev          # http://localhost:3000
 | `npm run lint`                    | ESLint (`next/core-web-vitals` + typescript-eslint, no `any`, zero warnings)                                                   |
 | `npm run typecheck`               | `tsc --noEmit` (strict)                                                                                                        |
 | `npm run format` / `format:check` | Prettier                                                                                                                       |
-| `npm test`                        | Vitest unit tests (contrast matrix, Hungarian solver, validation, chat guardrails, content integrity, résumé)                  |
+| `npm test`                        | Vitest: token contrast (read from `globals.css`), content integrity, world layout maths, validation, chat guardrails, résumé   |
 | `npm run test:e2e`                | Playwright smoke tests against the production build (run `npm run build` first; first time: `npx playwright install chromium`) |
 
 CI (`.github/workflows/ci.yml`) runs install → lint → typecheck → format check → unit tests → build → Playwright.
+
+## How the illustrations work
+
+| Piece                                                     | Role                                                                                                                                                                                           |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components/illustrations/kit.tsx`                        | `Peep` (an Open Peeps character from `public/peeps`) and props: laptop, plant, table, magnifier, document, cloud, sparkles                                                                     |
+| `scripts/build-peeps.mjs`                                 | Recolours and minifies the chosen Open Peeps SVGs into `public/peeps` (ink on warm paper) and records their sizes                                                                              |
+| `components/illustrations/scenes.tsx`                     | One scene per project plus about and contact, each acting out what the project does                                                                                                            |
+| `components/illustrations/Illustration.tsx`, `Tilt3D.tsx` | The 3D pop-up card: colour plane plus back / mid / front layers at increasing depth, resting tilt and pointer tilt; shows `public/illustrations/<slug>.*` instead if you add a hand-made image |
+| `app/globals.css` (Flat illustrations)                    | Idle animations (nod, blink, swaying leaves, bees, heat, scanner) and hover ones (wave, drive, magnify, rain, flag)                                                                            |
+
+Everything is SVG and CSS 3D transforms — no WebGL. Each character is a small cached SVG file (about 9 KB gzipped).
 
 ## Environment variables
 
@@ -43,36 +54,30 @@ All optional — see [.env.example](.env.example).
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`       | Rate limits are in-memory per instance                                 |
 | `NEXT_PUBLIC_ENABLE_ANALYTICS=true`                        | Analytics and Speed Insights are not loaded                            |
 
-## Replacing content and assets
+## Updating content
 
-**All copy** lives in `data/content.ts`. Anything marked `// TODO: verify` is a number or claim to confirm (or delete) before launch.
+**All copy** lives in `data/content.ts`. When a project changes, update its entry from the repository (README, reports) — the content tests reject placeholder text and require every project to link to a GitHub repository.
 
-| Asset                    | Where                                    | Notes                                                                                             |
-| ------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Project cover            | `public/projects/<slug>/cover.webp`      | 16:10, ≥1600 px wide. Replaces the generated art on cards, case study hero and 404                |
-| Process / gallery images | `public/projects/<slug>/<media id>.webp` | IDs are in each project's `process[].media.id` and `gallery[].id` (e.g. `process-1`, `gallery-2`) |
-| Testimonials             | `testimonials` in content                | Set `placeholder: false` on real ones; placeholders never render in production                    |
-| Booking link             | `bookingUrl` in content                  | Switches the hero's secondary CTA to "Book a call"                                                |
-| Portrait                 | `app/about/page.tsx` (marked TODO)       | Swap the illustration tile for `next/image`                                                       |
-| Résumé                   | generated from content at build          | Edit `lib/resume/build.ts` for layout                                                             |
-
-`avif`, `webp`, `png` and `jpg` are all detected; next/image serves AVIF/WebP with a brand-tinted blur placeholder.
+| Asset                   | Where                               | Notes                                                                                    |
+| ----------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------- |
+| Real project screenshot | `public/projects/<slug>/cover.webp` | Optional. When present it replaces the 3D illustration in the case-study header          |
+| LinkedIn                | `socials.linkedin` in content       | Empty by default (the URL could not be verified); links appear everywhere once it is set |
+| Email                   | `email` in content                  | Currently the public address on my GitHub commits                                        |
+| Résumé                  | generated from content at build     | Edit `lib/resume/build.ts` for layout; a test fails if it overflows one page             |
 
 ## Performance notes
 
-- First paint never waits for 3D: the hero SVG is server-rendered; the WebGL chunk loads on the first interaction and cross-fades in.
-- Budgets: first-load JS on `/` is ~170 KB (limit 200 KB, 3D excluded). Only the two hero fonts are preloaded.
-- Lighthouse (mobile, simulated throttling, local production build): **home 92 / 100 / 100 / 100**, case study 92 / 100 / 100 / 100, CLS ≤ 0.01, TBT ≤ 90 ms. Simulated LCP is ~3.2 s while observed LCP is 0.25 s (the H1 paints on the first frame); Lighthouse's model charges the hydration JS to LCP. Use Speed Insights field data after launch.
-- The `/playground/flow-gradient` page compiles a shader on load (TBT ~1.2 s in Lighthouse); that cost is the experiment itself.
+- All content and illustrations are server-rendered HTML/SVG, so nothing waits on JavaScript to appear.
+- Lighthouse (mobile, simulated throttling, local production build): `/` 100 / 100 / 100 / 100 (LCP 1.1 s); `/work/[slug]` 100 / 100 / 100 / 100; `/work` 85 / 100 / 100 / 100 — its simulated LCP (4.4 s) is the first card's character image, which actually loads in under 0.2 s locally. The first illustration on each page preloads its character at high priority.
+- Illustrations are inline SVG (no extra requests, no WebGL); animations are CSS and stop with reduced motion.
 
-## Deployment checklist
+## Deployment checklist (Vercel)
 
-- [ ] Verify every `// TODO: verify` in `data/content.ts`; replace placeholder testimonials or leave them hidden
-- [ ] Domain connected; set `NEXT_PUBLIC_SITE_URL`
+- [ ] Connect the repository; framework preset Next.js, default build command
+- [ ] Set `NEXT_PUBLIC_SITE_URL` to the production domain
 - [ ] `RESEND_API_KEY` + a verified sender domain; send yourself a test message
-- [ ] `ANTHROPIC_API_KEY` (optional) and ask the chat the four suggested questions
-- [ ] `NEXT_PUBLIC_ENABLE_ANALYTICS=true` on Vercel
+- [ ] `ANTHROPIC_API_KEY` (optional) and try the four suggested chat questions
+- [ ] `NEXT_PUBLIC_ENABLE_ANALYTICS=true` (optional)
 - [ ] Check `/opengraph-image` and a case study's OG card in a social preview tool
-- [ ] Submit `/sitemap.xml` in Google Search Console; request indexing for `/` and the top case studies
-- [ ] Run Lighthouse on the deployed URL (mobile) and compare with the numbers above
+- [ ] Submit `/sitemap.xml` in Google Search Console
 - [ ] Open `/resume.pdf` and check it reads correctly

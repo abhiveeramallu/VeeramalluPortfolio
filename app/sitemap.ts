@@ -4,7 +4,7 @@ import { absoluteUrl } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const pages = ['/', '/work', '/about', '/playground', '/contact'].map((path) => ({
+  const pages = ['/', '/work', '/about', '/contact'].map((path) => ({
     url: absoluteUrl(path),
     lastModified: now,
     changeFrequency: 'monthly' as const,
@@ -14,18 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: absoluteUrl(`/work/${p.slug}`),
     lastModified: now,
     changeFrequency: 'monthly' as const,
-    priority: p.featured ? 0.9 : 0.7,
+    priority: 0.9,
   }));
-  const experiments = SITE_CONFIG.experiments.map((e) => ({
-    url: absoluteUrl(`/playground/${e.slug}`),
-    lastModified: now,
-    changeFrequency: 'yearly' as const,
-    priority: 0.5,
-  }));
-  return [
-    ...pages,
-    ...projects,
-    ...experiments,
-    { url: absoluteUrl('/resume.pdf'), lastModified: now, priority: 0.6 },
-  ];
+  return [...pages, ...projects, { url: absoluteUrl('/resume.pdf'), lastModified: now, priority: 0.6 }];
 }

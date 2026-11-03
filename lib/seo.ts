@@ -1,4 +1,4 @@
-import { SITE_CONFIG, type Experiment, type ProjectItem } from '@/data/content';
+import { SITE_CONFIG, type ProjectItem } from '@/data/content';
 import { absoluteUrl, SITE_URL } from '@/lib/site';
 
 type JsonLdObject = Record<string, unknown>;
@@ -13,16 +13,9 @@ export function personJsonLd(): JsonLdObject {
     url: SITE_URL,
     email: `mailto:${SITE_CONFIG.email}`,
     address: { '@type': 'PostalAddress', addressLocality: SITE_CONFIG.location },
-    sameAs: Object.values(SITE_CONFIG.socials),
-    knowsAbout: [
-      'Product design',
-      'Design systems',
-      'Design engineering',
-      'React',
-      'Next.js',
-      'Three.js',
-      'Accessibility',
-    ],
+    alumniOf: { '@type': 'CollegeOrUniversity', name: 'Vellore Institute of Technology' },
+    sameAs: Object.values(SITE_CONFIG.socials).filter(Boolean),
+    knowsAbout: SITE_CONFIG.skills.flatMap((g) => g.items).slice(0, 20),
   };
 }
 
@@ -54,30 +47,17 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]): JsonL
 export function projectJsonLd(project: ProjectItem): JsonLdObject {
   return {
     '@context': 'https://schema.org',
-    '@type': 'CreativeWork',
+    '@type': 'SoftwareSourceCode',
     name: project.title,
-    headline: project.tagline,
-    description: project.description,
+    description: project.summary,
     url: absoluteUrl(`/work/${project.slug}`),
     image: absoluteUrl(`/work/${project.slug}/opengraph-image`),
-    dateCreated: project.year,
+    codeRepository: project.repoUrl,
+    programmingLanguage: project.stack.slice(0, 4),
     genre: project.category,
-    keywords: project.tools.join(', '),
-    creator: { '@id': `${SITE_URL}/#person` },
+    keywords: project.stack.join(', '),
+    author: { '@id': `${SITE_URL}/#person` },
     ...(project.liveUrl ? { sameAs: project.liveUrl } : {}),
-  };
-}
-
-export function experimentJsonLd(exp: Experiment): JsonLdObject {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'CreativeWork',
-    name: exp.title,
-    description: exp.tagline,
-    url: absoluteUrl(`/playground/${exp.slug}`),
-    dateCreated: exp.year,
-    genre: exp.kind,
-    creator: { '@id': `${SITE_URL}/#person` },
   };
 }
 

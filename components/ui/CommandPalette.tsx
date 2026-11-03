@@ -3,31 +3,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  Briefcase,
-  Copy,
-  FileDown,
-  FlaskConical,
-  Home,
-  Mail,
-  MessageCircle,
-  Moon,
-  Search,
-  User,
-} from 'lucide-react';
+import { Briefcase, Copy, FileDown, Github, Home, Mail, MessageCircle, Search, User } from 'lucide-react';
 import { SITE_CONFIG } from '@/data/content';
 import { duration, ease } from '@/lib/motion';
 import { emit, on } from '@/lib/events';
 import { lockScroll } from '@/lib/scroll';
 import { track } from '@/lib/analytics';
-import { toggleTheme } from '@/lib/theme';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { cn } from '@/lib/utils';
 
 interface Command {
   id: string;
   label: string;
-  group: 'Navigate' | 'Case studies' | 'Playground' | 'Actions';
+  group: 'Navigate' | 'Case studies' | 'Actions';
   icon: React.ReactNode;
   keywords?: string;
   run: () => void;
@@ -73,25 +61,16 @@ export function CommandPalette() {
     const go = (href: string) => () => router.push(href);
     return [
       { id: 'home', label: 'Home', group: 'Navigate', icon: <Home />, run: go('/') },
-      { id: 'work', label: 'All work', group: 'Navigate', icon: <Briefcase />, run: go('/work') },
+      { id: 'work', label: 'All projects', group: 'Navigate', icon: <Briefcase />, run: go('/work') },
       { id: 'about', label: 'About me', group: 'Navigate', icon: <User />, run: go('/about') },
-      { id: 'play', label: 'Playground', group: 'Navigate', icon: <FlaskConical />, run: go('/playground') },
       { id: 'contact', label: 'Contact', group: 'Navigate', icon: <Mail />, run: go('/contact') },
       ...SITE_CONFIG.projects.map<Command>((p) => ({
         id: `p-${p.slug}`,
         label: p.title,
         group: 'Case studies',
         icon: <Briefcase />,
-        keywords: `${p.category} ${p.tagline}`,
+        keywords: `${p.category} ${p.stack.join(' ')}`,
         run: go(`/work/${p.slug}`),
-      })),
-      ...SITE_CONFIG.experiments.map<Command>((e) => ({
-        id: `e-${e.slug}`,
-        label: e.title,
-        group: 'Playground',
-        icon: <FlaskConical />,
-        keywords: e.kind,
-        run: go(`/playground/${e.slug}`),
       })),
       {
         id: 'copy',
@@ -125,12 +104,12 @@ export function CommandPalette() {
         },
       },
       {
-        id: 'theme',
-        label: 'Toggle dark theme',
+        id: 'github',
+        label: 'Open GitHub profile',
         group: 'Actions',
-        icon: <Moon />,
-        keywords: 'light dark mode',
-        run: () => toggleTheme(),
+        icon: <Github />,
+        keywords: 'code repositories source',
+        run: () => window.open(SITE_CONFIG.socials.github, '_blank', 'noopener,noreferrer'),
       },
     ];
   }, [router]);
@@ -219,7 +198,7 @@ export function CommandPalette() {
         {open && (
           <div className="fixed inset-0 z-[70] flex items-start justify-center px-4 pt-[12vh]">
             <motion.div
-              className="absolute inset-0 bg-[#111]/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -291,9 +270,7 @@ export function CommandPalette() {
                           i === active ? 'bg-bg' : '',
                         )}
                       >
-                        <span className={cn('text-muted', i === active && 'text-orange-600')}>
-                          {cmd.icon}
-                        </span>
+                        <span className={cn('text-muted', i === active && 'text-accent')}>{cmd.icon}</span>
                         {cmd.label}
                       </div>
                     </li>
@@ -311,7 +288,7 @@ export function CommandPalette() {
         role="status"
         aria-live="polite"
         className={cn(
-          'fixed bottom-24 left-1/2 z-[71] -translate-x-1/2 rounded-pill bg-[#111] px-4 py-2 font-mono text-xs text-[#f6f4ef] transition-opacity',
+          'fixed bottom-24 left-1/2 z-[71] -translate-x-1/2 rounded-pill bg-ink px-4 py-2 font-mono text-xs text-night transition-opacity',
           toast ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
       >

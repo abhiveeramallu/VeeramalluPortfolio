@@ -1,0 +1,2 @@
+Characters from Open Peeps by Pablo Stanley (https://www.openpeeps.com), released into the public domain under CC0 1.0.
+Recoloured and minified by scripts/build-peeps.mjs.

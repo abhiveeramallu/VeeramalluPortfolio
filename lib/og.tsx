@@ -25,28 +25,24 @@ async function loadFont(
   }
 }
 
-const SHAPES = ['#FF5A1F', '#5B5BFF', '#C6F432', '#FFB8D6'];
-
-/** Shared branded OG card: eyebrow, title, one serif accent line, footer with name + domain. */
+/** Shared OG card: olive paper, cut-paper botanicals, title, one serif accent line, footer. */
 export async function renderOg({
   eyebrow,
   title,
   accent,
-  color = '#FF5A1F',
 }: {
   eyebrow: string;
   title: string;
   accent?: string;
-  color?: string;
 }) {
   const domain = SITE_URL.replace(/^https?:\/\//, '');
-  const allText = `${eyebrow}${title}${accent ?? ''}${SITE_CONFIG.name}${SITE_CONFIG.role}${domain}`;
+  const allText = `${eyebrow}${title}${SITE_CONFIG.name}${SITE_CONFIG.role}${domain}`;
   const [display, serif] = await Promise.all([
-    loadFont('Space Grotesk', 700, allText),
+    loadFont('Fraunces', 600, allText),
     accent ? loadFont('Instrument Serif', 400, accent, true) : null,
   ]);
   const fonts = [
-    ...(display ? [{ name: 'Display', data: display, weight: 700 as const, style: 'normal' as const }] : []),
+    ...(display ? [{ name: 'Display', data: display, weight: 600 as const, style: 'normal' as const }] : []),
     ...(serif ? [{ name: 'Serif', data: serif, weight: 400 as const, style: 'italic' as const }] : []),
   ];
 
@@ -59,54 +55,42 @@ export async function renderOg({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: '#F6F4EF',
+          background: '#171811',
           padding: 72,
           fontFamily: 'Display',
           position: 'relative',
+          color: '#f4f0de',
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            right: 70,
-            top: 70,
-            display: 'flex',
-            flexWrap: 'wrap',
-            width: 220,
-            gap: 16,
-          }}
+        <svg
+          width={380}
+          height={380}
+          viewBox="0 0 100 100"
+          style={{ position: 'absolute', right: 60, top: 120 }}
         >
-          {SHAPES.map((c, i) => (
-            <div
-              key={c}
-              style={{
-                width: 96,
-                height: 96,
-                borderRadius: i % 2 ? 28 : 48,
-                background: c === SHAPES[0] ? color : c,
-              }}
-            />
-          ))}
-        </div>
+          <circle cx="70" cy="22" r="14" fill="#e5c542" />
+          <path d="M8 96 C 20 60, 32 52, 40 30 C 48 52, 46 70, 44 96 Z" fill="#328477" />
+          <path d="M44 96 C 50 66, 64 56, 86 46 C 82 70, 66 84, 52 96 Z" fill="#20594f" />
+          <circle cx="62" cy="64" r="11" fill="#e98b72" />
+        </svg>
         <div
           style={{
             display: 'flex',
-            fontSize: 26,
-            color: '#6B6B66',
-            letterSpacing: 2,
+            fontSize: 24,
+            color: '#e5c542',
+            letterSpacing: 3,
             textTransform: 'uppercase',
           }}
         >
           {eyebrow}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 860 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 760 }}>
           <div
             style={{
-              fontSize: title.length > 28 ? 68 : 92,
-              fontWeight: 700,
-              color: '#111',
+              fontSize: title.length > 24 ? 64 : 88,
+              fontWeight: 600,
               lineHeight: 1.02,
-              letterSpacing: -3,
+              letterSpacing: -2,
             }}
           >
             {title}
@@ -114,12 +98,12 @@ export async function renderOg({
           {accent && (
             <div
               style={{
-                fontSize: 52,
+                fontSize: 44,
                 fontFamily: 'Serif',
                 fontStyle: 'italic',
-                color: '#BD3D0C',
+                color: '#d6d1bc',
                 marginTop: 18,
-                lineHeight: 1.15,
+                lineHeight: 1.2,
               }}
             >
               {accent}
@@ -131,31 +115,16 @@ export async function renderOg({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            fontSize: 24,
-            color: '#111',
-            borderTop: '2px solid #E4E0D8',
+            fontSize: 22,
+            borderTop: '1px solid rgba(244,240,222,0.2)',
             paddingTop: 24,
+            color: '#d6d1bc',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                background: '#111',
-                color: '#FF5A1F',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 18,
-              }}
-            >
-              {SITE_CONFIG.initials}
-            </div>
+          <div style={{ display: 'flex' }}>
             {SITE_CONFIG.name} · {SITE_CONFIG.role}
           </div>
-          <div style={{ display: 'flex', color: '#6B6B66' }}>{domain}</div>
+          <div style={{ display: 'flex' }}>{domain}</div>
         </div>
       </div>
     ),

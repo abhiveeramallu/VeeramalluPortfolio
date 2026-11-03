@@ -7,8 +7,8 @@ export default function GlobalError({ reset }: { error: Error; reset: () => void
       <body
         style={{
           fontFamily: 'system-ui, sans-serif',
-          background: '#F6F4EF',
-          color: '#111',
+          background: '#171811',
+          color: '#f4f0de',
           display: 'grid',
           placeItems: 'center',
           minHeight: '100vh',
@@ -17,7 +17,7 @@ export default function GlobalError({ reset }: { error: Error; reset: () => void
       >
         <div style={{ textAlign: 'center', padding: 24 }}>
           <h1 style={{ fontSize: 32 }}>Something went wrong.</h1>
-          <p style={{ color: '#6B6B66' }}>Please reload the page.</p>
+          <p style={{ color: '#d6d1bc' }}>Please reload the page.</p>
           <button
             type="button"
             onClick={reset}
@@ -26,8 +26,8 @@ export default function GlobalError({ reset }: { error: Error; reset: () => void
               padding: '12px 24px',
               borderRadius: 999,
               border: 0,
-              background: '#FF5A1F',
-              color: '#111',
+              background: '#e5c542',
+              color: '#171811',
               fontWeight: 600,
             }}
           >

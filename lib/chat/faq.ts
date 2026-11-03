@@ -9,58 +9,65 @@ interface FaqEntry {
 }
 
 const c = SITE_CONFIG;
-const featured = c.projects.filter((p) => p.featured);
-const project = (slug: string) => c.projects.find((p) => p.slug === slug)!;
+const project = (slug: string) => {
+  const p = c.projects.find((x) => x.slug === slug);
+  if (!p) throw new Error(`FAQ references unknown project "${slug}"`);
+  return p;
+};
 const src = (slug: string): ChatSource => ({ title: project(slug).title, href: `/work/${slug}` });
 
 const FAQ: FaqEntry[] = [
   {
-    match: /avail|hire|hiring|role|job|open to|start|freelance|full[- ]?time/i,
+    match: /contact|email|reach|hire|hiring|intern|role|job|avail/i,
     answer: () =>
-      `${c.shortName} is ${c.status.toLowerCase()} ${c.availability}, focused on product design and design engineering roles. The quickest route is ${c.email} or the form on the contact page; the résumé is at /resume.pdf.`,
+      `${c.shortName} is a Computer Science student at VIT Vellore (${c.status.toLowerCase()}). The quickest route is ${c.email} or the form on the contact page; the résumé is at /resume.pdf.`,
     sources: [{ title: 'Contact', href: '/contact' }],
   },
   {
-    match: /process|approach|how (do|does) (you|he)|method|workflow/i,
-    answer: () =>
-      `${c.shortName} works in six steps: ${c.processSteps.map((s) => s.title.toLowerCase()).join(', ')}. Each step ends in a concrete artifact — for example a coded prototype on a shareable URL before anything is final.`,
+    match: /routefusion|dispatch|hungarian|ride|parcel/i,
+    answer: () => `${project('routefusion').summary} ${project('routefusion').currentStatus}`,
     sources: [src('routefusion')],
   },
   {
-    match: /3d|three|webgl|shader|glsl|r3f|creative/i,
+    match: /threatlens|bot|captcha|login/i,
     answer: () =>
-      `The strongest 3D work is Kinetic Craft (a physics-driven identity with a 180 kB WebGL hero), the ThreatLens analyst radar, and this site's own hero and GLSL Flow Field Gradient in the playground.`,
-    sources: [src('kinetic-craft'), { title: 'Flow Field Gradient', href: '/playground/flow-gradient' }],
-  },
-  {
-    match: /routefusion|dispatch|logistic|hungarian/i,
-    answer: () =>
-      `On RouteFusion ${c.shortName} was ${project('routefusion').role.toLowerCase()}. ${project('routefusion').solution}`,
-    sources: [src('routefusion')],
-  },
-  {
-    match: /threatlens|bot|captcha|security/i,
-    answer: () =>
-      `ThreatLens AI is ${project('threatlens-ai').tagline.toLowerCase()} ${project('threatlens-ai').solution}`,
+      `${project('threatlens-ai').summary} Limitations: ${project('threatlens-ai').limitations.join(' ')}`,
     sources: [src('threatlens-ai')],
   },
   {
-    match: /design system|token|lumina/i,
-    answer: () =>
-      `Lumina Tokens turns Figma variables into CSS, Swift and Compose themes with a CI contrast gate; Aura Flora uses comfort-band colour tokens. Both case studies include an interactive token inspector.`,
-    sources: [src('lumina-design-system'), src('greenhouse-telemetry')],
+    match: /imageguard|forg|watermark|image/i,
+    answer: () => project('imageguard').summary,
+    sources: [src('imageguard')],
   },
   {
-    match: /tool|stack|tech|figma|react|next/i,
+    match: /stm32|embedded|thermal|edge|hardware/i,
     answer: () =>
-      `Core toolkit: ${c.tools.map((t) => t.name).join(', ')}. ${c.shortName} prototypes in code so constraints show up early.`,
-    sources: [],
+      `${project('edge-ai-thermal-management').summary} On unseen test data the model did not beat the simple persistence baseline, and the case study reports that.`,
+    sources: [src('edge-ai-thermal-management')],
+  },
+  {
+    match: /machine learning|\bml\b|\bai\b|model|forecast|rag|llm/i,
+    answer: () =>
+      `Machine-learning projects include ThreatLensAI (rule engine vs. XGBoost), VisionRAG-X (conflict-aware multimodal retrieval), Greenhouse Microclimate Forecasting (GRU ensemble) and Edge AI Thermal Management (Extra Trees forecasting).`,
+    sources: [src('threatlens-ai'), src('visionrag-x'), src('greenhouse-microclimate-forecasting')],
+  },
+  {
+    match: /security|honeypot|attack|mitre/i,
+    answer: () =>
+      `Security work: ThreatLensAI (bot detection with a measured evasion test), the Honeypot Attack Classifier (Cowrie logs → MITRE ATT&CK, Sigma drafts, IoC feed) and ImageGuard (image forensics).`,
+    sources: [src('threatlens-ai'), src('honeypot-attack-classification'), src('imageguard')],
+  },
+  {
+    match: /tool|stack|tech|skill|language|python|react|fastapi/i,
+    answer: () =>
+      `Skills used across the repositories: ${c.skills.map((g) => `${g.group} — ${g.items.join(', ')}`).join('; ')}.`,
+    sources: [{ title: 'About', href: '/about' }],
   },
   {
     match: /best|strongest|favou?rite|project|work|portfolio/i,
     answer: () =>
-      `Start with ${featured[0].title} (${featured[0].tagline.toLowerCase()}) and ${featured[1].title} (${featured[1].tagline.toLowerCase()}).`,
-    sources: [src(featured[0].slug), src(featured[1].slug)],
+      `Good starting points are RouteFusion (${project('routefusion').summary.split(',')[0].toLowerCase()}) and ThreatLensAI, both with live demos.`,
+    sources: [src('routefusion'), src('threatlens-ai')],
   },
 ];
 
@@ -68,7 +75,7 @@ export function faqAnswer(question: string): { text: string; sources: ChatSource
   const hit = FAQ.find((f) => f.match.test(question));
   if (hit) return { text: hit.answer(), sources: hit.sources };
   return {
-    text: `I can answer questions about ${c.shortName}'s projects, process, tools and availability. Try “What did you do on RouteFusion?” — or email ${c.email}.`,
-    sources: [{ title: 'All work', href: '/work' }],
+    text: `I can answer questions about ${c.shortName}'s projects, skills and education. Try “What does RouteFusion do?” — or email ${c.email}.`,
+    sources: [{ title: 'All projects', href: '/work' }],
   };
 }
