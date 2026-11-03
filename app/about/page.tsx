@@ -5,6 +5,7 @@ import { SITE_CONFIG } from '@/data/content';
 import { breadcrumbJsonLd } from '@/lib/seo';
 import { JsonLd } from '@/components/ui/JsonLd';
 import { TrackedLink } from '@/components/ui/TrackedLink';
+import { Illustration } from '@/components/illustrations/Illustration';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -71,25 +72,35 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <aside aria-labelledby="facts-title" className="frame h-fit p-6 md:p-8">
-          <h2 id="facts-title" className="label text-muted">
-            At a glance
-          </h2>
-          <dl className="mt-6 divide-y divide-line">
-            {[
-              ['Education', 'B.Tech Computer Science, VIT Vellore (2023 – 2027, expected)'],
-              ['Certification', 'IBM Generative AI Engineering Professional Certificate'],
-              ['Based in', SITE_CONFIG.location],
-              ['Interests', SITE_CONFIG.interests.join(' · ')],
-              ['Code', 'github.com/abhiveeramallu'],
-            ].map(([k, v]) => (
-              <div key={k} className="grid grid-cols-[7.5rem_1fr] gap-4 py-4 text-sm">
-                <dt className="label pt-0.5 text-[10px] text-muted">{k}</dt>
-                <dd>{v}</dd>
-              </div>
-            ))}
-          </dl>
-        </aside>
+        <div className="space-y-12">
+          <div className="group">
+            <Illustration
+              priority
+              scene="about"
+              side="left"
+              label="Comic illustration: Abhiram saying &#8220;Hi, I&#8217;m Abhiram!&#8221;, with code, shield and chart stickers floating beside him."
+            />
+          </div>
+          <aside aria-labelledby="facts-title" className="frame h-fit p-6 md:p-8">
+            <h2 id="facts-title" className="label text-muted">
+              At a glance
+            </h2>
+            <dl className="mt-6 divide-y divide-line">
+              {[
+                ['Education', 'B.Tech Computer Science, VIT Vellore (2023 – 2027, expected)'],
+                ['Certification', 'IBM Generative AI Engineering Professional Certificate'],
+                ['Based in', SITE_CONFIG.location],
+                ['Interests', SITE_CONFIG.interests.join(' · ')],
+                ['Code', 'github.com/abhiveeramallu'],
+              ].map(([k, v]) => (
+                <div key={k} className="grid grid-cols-[7.5rem_1fr] gap-4 py-4 text-sm">
+                  <dt className="label pt-0.5 text-[10px] text-muted">{k}</dt>
+                  <dd>{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </aside>
+        </div>
       </div>
 
       <section aria-labelledby="areas-title" className="mt-24">

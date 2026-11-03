@@ -55,10 +55,12 @@
 }
 
 /*
- * Pop theme (main page), matched to my illustration: hot orange, purple and lavender, cream paper and
- * near-black ink. Scoped with a class so the other pages keep the dark editorial palette.
+ * Pop theme — the site theme, applied on <html>: cream paper, near-black ink, hot orange and purple,
+ * after printed comics and zines. The :root values above are the original dark palette, kept as the
+ * fallback and for the token tests.
  */
 .theme-pop {
+  color-scheme: light;
   --c-bg: 255 243 230;
   --c-surface: 251 228 207;
   --c-raised: 245 214 187;
@@ -66,7 +68,7 @@
   --c-soft: 59 51 70;
   --c-muted: 101 91 112;
   --c-night: 255 243 230;
-  --c-accent: 194 65 12;
+  --c-accent: 168 56 10;
   --c-accent-2: 91 63 160;
   --c-teal: 91 63 160;
   --c-teal-deep: 42 31 69;
@@ -92,8 +94,8 @@
 }
 
 html {
-  background-color: var(--bg);
-  color: var(--ink);
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
   -webkit-text-size-adjust: 100%;
 }
 
@@ -110,8 +112,8 @@ html.lenis body {
 }
 
 body {
-  background-color: var(--bg);
-  color: var(--ink);
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
   overflow-x: clip;
   min-height: 100vh;
 }
@@ -128,8 +130,8 @@ body::after {
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--night);
+  background: rgb(var(--c-accent));
+  color: rgb(var(--c-night));
 }
 
 /* Anchor targets clear the floating navbar. */
@@ -689,4 +691,26 @@ body::after {
 .group:hover .illustration .bubble,
 .group:focus-within .illustration .bubble {
   scale: 1.08;
+}
+
+/* Comic chrome for the pop theme: ink outlines with hard offset shadows, like printed panels. */
+.theme-pop .btn-primary,
+.theme-pop .btn-secondary {
+  border: 2px solid rgb(var(--c-ink));
+  box-shadow: 3px 3px 0 0 rgb(var(--c-ink));
+}
+.theme-pop .btn-secondary {
+  background-color: rgb(var(--c-bg));
+}
+.theme-pop .btn-primary:hover,
+.theme-pop .btn-secondary:hover {
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 0 rgb(var(--c-ink));
+}
+.theme-pop .frame {
+  border: 2px solid rgb(var(--c-ink));
+  box-shadow: 6px 6px 0 0 rgb(var(--c-ink));
+}
+.theme-pop .chip {
+  border-color: rgb(var(--c-ink) / 0.35);
 }

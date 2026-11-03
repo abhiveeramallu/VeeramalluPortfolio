@@ -30,7 +30,7 @@ Removed: `/playground` and `/playground/[slug]` routes and OG images; `component
 
 ## Design system
 
-- **Main page palette** (`.theme-pop`): cream paper, near-black ink, orange and purple accents, a deep-purple panel for About; illustration cards use blue, red, yellow, lilac, green, orange, mint, pink and periwinkle. Other pages keep the dark editorial palette. Tokens live in `lib/tokens.ts` and `app/globals.css` (RGB channel variables so themes can be scoped); unit tests assert WCAG AA for every text pairing in both themes.
+- **Palette** (`.theme-pop`, applied on `<html>` so every page uses it): cream paper, near-black ink, orange (`#a8380a` for text, `#ff5a1f` for the hero) and purple accents, a deep-purple panel for About; buttons, panels and the navbar get ink outlines with hard offset shadows like printed comic panels. The original dark palette stays in `:root` as a fallback. Tokens live in `lib/tokens.ts` and `app/globals.css` (RGB channel variables); unit tests assert WCAG AA for every text pairing, including accent text on every cream surface.
 - **Type:** Alfa Slab One for the main page's headlines, Fraunces for display elsewhere and accent words, Inter for body, JetBrains Mono for labels.
 
 ## Illustrations: accessibility and performance

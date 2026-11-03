@@ -25,7 +25,7 @@ async function loadFont(
   }
 }
 
-/** Shared OG card: olive paper, cut-paper botanicals, title, one serif accent line, footer. */
+/** Shared OG card in the site's comic theme: hot orange, a starburst, slab title, one serif accent line. */
 export async function renderOg({
   eyebrow,
   title,
@@ -38,11 +38,11 @@ export async function renderOg({
   const domain = SITE_URL.replace(/^https?:\/\//, '');
   const allText = `${eyebrow}${title}${SITE_CONFIG.name}${SITE_CONFIG.role}${domain}`;
   const [display, serif] = await Promise.all([
-    loadFont('Fraunces', 600, allText),
+    loadFont('Alfa Slab One', 400, allText),
     accent ? loadFont('Instrument Serif', 400, accent, true) : null,
   ]);
   const fonts = [
-    ...(display ? [{ name: 'Display', data: display, weight: 600 as const, style: 'normal' as const }] : []),
+    ...(display ? [{ name: 'Display', data: display, weight: 400 as const, style: 'normal' as const }] : []),
     ...(serif ? [{ name: 'Serif', data: serif, weight: 400 as const, style: 'italic' as const }] : []),
   ];
 
@@ -55,11 +55,11 @@ export async function renderOg({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: '#171811',
+          background: '#ff5a1f',
           padding: 72,
           fontFamily: 'Display',
           position: 'relative',
-          color: '#f4f0de',
+          color: '#16121f',
         }}
       >
         <svg
@@ -68,16 +68,19 @@ export async function renderOg({
           viewBox="0 0 100 100"
           style={{ position: 'absolute', right: 60, top: 120 }}
         >
-          <circle cx="70" cy="22" r="14" fill="#e5c542" />
-          <path d="M8 96 C 20 60, 32 52, 40 30 C 48 52, 46 70, 44 96 Z" fill="#328477" />
-          <path d="M44 96 C 50 66, 64 56, 86 46 C 82 70, 66 84, 52 96 Z" fill="#20594f" />
-          <circle cx="62" cy="64" r="11" fill="#e98b72" />
+          <polygon
+            points="50.0,4.0 56.6,16.7 67.6,7.5 68.9,21.7 82.5,17.5 78.3,31.1 92.5,32.4 83.3,43.4 96.0,50.0 83.3,56.6 92.5,67.6 78.3,68.9 82.5,82.5 68.9,78.3 67.6,92.5 56.6,83.3 50.0,96.0 43.4,83.3 32.4,92.5 31.1,78.3 17.5,82.5 21.7,68.9 7.5,67.6 16.7,56.6 4.0,50.0 16.7,43.4 7.5,32.4 21.7,31.1 17.5,17.5 31.1,21.7 32.4,7.5 43.4,16.7"
+            fill="#ffb21a"
+            stroke="#16121f"
+            strokeWidth="2"
+          />
+          <circle cx="50" cy="50" r="18" fill="#fff3e6" stroke="#16121f" strokeWidth="2" />
         </svg>
         <div
           style={{
             display: 'flex',
             fontSize: 24,
-            color: '#e5c542',
+            color: '#16121f',
             letterSpacing: 3,
             textTransform: 'uppercase',
           }}
@@ -88,7 +91,7 @@ export async function renderOg({
           <div
             style={{
               fontSize: title.length > 24 ? 64 : 88,
-              fontWeight: 600,
+              fontWeight: 400,
               lineHeight: 1.02,
               letterSpacing: -2,
             }}
@@ -101,7 +104,7 @@ export async function renderOg({
                 fontSize: 44,
                 fontFamily: 'Serif',
                 fontStyle: 'italic',
-                color: '#d6d1bc',
+                color: '#2a1f45',
                 marginTop: 18,
                 lineHeight: 1.2,
               }}
@@ -116,9 +119,9 @@ export async function renderOg({
             justifyContent: 'space-between',
             alignItems: 'center',
             fontSize: 22,
-            borderTop: '1px solid rgba(244,240,222,0.2)',
+            borderTop: '2px solid #16121f',
             paddingTop: 24,
-            color: '#d6d1bc',
+            color: '#2a1f45',
           }}
         >
           <div style={{ display: 'flex' }}>

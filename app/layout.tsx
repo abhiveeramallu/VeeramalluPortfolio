@@ -41,13 +41,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#171811',
-  colorScheme: 'dark',
+  themeColor: '#ff5a1f',
+  colorScheme: 'light',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={fontVariables} suppressHydrationWarning>
+    <html lang="en" className={`${fontVariables} theme-pop`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: JS_SCRIPT }} />
         <JsonLd data={[personJsonLd(), websiteJsonLd()]} />

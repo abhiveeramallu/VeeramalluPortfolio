@@ -8,6 +8,7 @@ import { OpenChatButton } from '@/components/ui/OpenChatButton';
 import { TrackedLink } from '@/components/ui/TrackedLink';
 import { JsonLd } from '@/components/ui/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo';
+import { Illustration } from '@/components/illustrations/Illustration';
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -77,6 +78,14 @@ export default function ContactPage() {
               </a>
             )}
             <OpenChatButton className="btn-secondary" label="Ask the assistant" />
+          </div>
+          <div className="group mt-14 max-w-md">
+            <Illustration
+              priority
+              scene="contact"
+              side="left"
+              label="Comic illustration: Abhiram saying &#8220;Say hello!&#8221; next to a mailbox while a paper plane loops overhead."
+            />
           </div>
         </div>
         <div className="frame p-6 sm:p-10 lg:col-span-7">

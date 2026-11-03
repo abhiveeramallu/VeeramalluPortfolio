@@ -38,7 +38,8 @@ export function Navbar() {
 
   const isActive = (href: string) =>
     !href.includes('#') && (pathname === href || pathname.startsWith(`${href}/`));
-  const pill = 'rounded-pill bg-bg/85 backdrop-blur-sm';
+  const pill =
+    'rounded-pill border-2 border-ink bg-bg/90 shadow-[3px_3px_0_0_rgb(var(--c-ink))] backdrop-blur-sm';
 
   return (
     <header className="no-print pointer-events-none fixed inset-x-0 top-0 z-50 px-4 pt-4 md:px-10 md:pt-6">

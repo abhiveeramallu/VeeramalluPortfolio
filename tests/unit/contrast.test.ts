@@ -90,6 +90,8 @@ describe('pop theme contrast (WCAG 2.2 AA)', () => {
     ['muted on paper', pop, 'muted', 'bg'],
     ['muted on surface', pop, 'muted', 'surface'],
     ['orange accent on paper', pop, 'accent', 'bg'],
+    ['orange accent on surface', pop, 'accent', 'surface'],
+    ['orange accent on raised', pop, 'accent', 'raised'],
     ['purple accent on paper', pop, 'accent-2', 'bg'],
     ['cream on orange button', pop, 'night', 'accent'],
     ['cream on purple sticker', pop, 'night', 'accent-2'],

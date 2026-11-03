@@ -22,14 +22,14 @@ export default function Icon({ id }: { id: string }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#171811',
+          background: '#ff5a1f',
           borderRadius: s * 0.22,
         }}
       >
         <svg width={s * 0.66} height={s * 0.66} viewBox="0 0 40 40">
-          <circle cx="27" cy="12" r="7" fill="#e5c542" />
+          <circle cx="27" cy="12" r="7" fill="#fff3e6" />
           <path d="M6 36 C 10 24, 14 20, 17 10 C 21 20, 20 28, 19 36 Z" fill="#328477" />
-          <circle cx="26" cy="27" r="7" fill="#e98b72" />
+          <circle cx="26" cy="27" r="7" fill="#16121f" />
         </svg>
       </div>
     ),
