@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { SITE_CONFIG } from '@/data/content';
+import { emit } from '@/lib/events';
+import { duration, ease } from '@/lib/motion';
+import { NAV_LINKS } from '@/lib/nav';
+import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Command, FileDown, Menu, X } from 'lucide-react';
-import { SITE_CONFIG } from '@/data/content';
-import { duration, ease } from '@/lib/motion';
-import { emit } from '@/lib/events';
-import { cn } from '@/lib/utils';
-import { NAV_LINKS } from '@/lib/nav';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Minimal floating navigation: brand on the left, Home/Projects/About/Contact/Résumé on the right.
@@ -49,7 +49,7 @@ export function Navbar() {
           className={cn(pill, 'pointer-events-auto flex min-h-[40px] items-center gap-3 px-4 text-ink')}
         >
           <span aria-hidden className="label text-[11px] text-accent">
-            {SITE_CONFIG.initials}
+            HOME
           </span>
           <span className="font-display text-sm font-semibold">{SITE_CONFIG.displayName}</span>
           <span className="sr-only">, home</span>
@@ -76,10 +76,11 @@ export function Navbar() {
             })}
             <li>
               <a
-                href="/resume.pdf"
+                href={SITE_CONFIG.resumeUrl}
+                download
                 className="label flex items-center gap-1.5 rounded-pill px-3.5 py-2 text-[11px] text-soft transition-colors hover:text-ink"
               >
-                <FileDown size={13} aria-hidden /> Résumé
+                <FileDown size={13} aria-hidden /> Resume
               </a>
             </li>
           </ul>
@@ -137,7 +138,11 @@ export function Navbar() {
                 </li>
               ))}
               <li>
-                <a href="/resume.pdf" className="block rounded-xl px-3 py-3 text-ink hover:bg-raised">
+                <a
+                  href={SITE_CONFIG.resumeUrl}
+                  download
+                  className="block rounded-xl px-3 py-3 text-ink hover:bg-raised"
+                >
                   Résumé (PDF)
                 </a>
               </li>

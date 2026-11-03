@@ -20,7 +20,7 @@ const FAQ: FaqEntry[] = [
   {
     match: /contact|email|reach|hire|hiring|intern|role|job|avail/i,
     answer: () =>
-      `${c.shortName} is a Computer Science student at VIT Vellore (${c.status.toLowerCase()}). The quickest route is ${c.email} or the form on the contact page; the résumé is at /resume.pdf.`,
+      `${c.shortName} is a Computer Science student at VIT Vellore (${c.status.toLowerCase()}). The quickest route is ${c.email} or the form on the contact page; the résumé is at ${c.resumeUrl}.`,
     sources: [{ title: 'Contact', href: '/contact' }],
   },
   {

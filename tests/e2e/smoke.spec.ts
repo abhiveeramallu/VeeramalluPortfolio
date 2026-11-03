@@ -14,9 +14,13 @@ test('home shows name, intro, CTAs and every project in HTML', async ({ page }) 
   const errors = watchErrors(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Veeramallu Sai Abhiram');
-  await expect(page.getByText('I build AI systems').first()).toBeVisible();
-  await expect(page.getByRole('link', { name: /explore projects/i })).toBeVisible();
-  await expect(page.getByRole('link', { name: /résumé/i }).first()).toHaveAttribute('href', '/resume.pdf');
+  await expect(page.getByText('I build intelligent systems').first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /see what i’ve built/i })).toHaveAttribute('href', '#projects');
+  await expect(page.getByRole('link', { name: /let’s connect/i })).toHaveAttribute('href', '#contact');
+  await expect(page.getByRole('link', { name: /résumé/i }).first()).toHaveAttribute(
+    'href',
+    '/DigitalVeeramalluSaiAbhiram.pdf',
+  );
   await expect(page.locator('article[id^="project-"]')).toHaveCount(9);
   await expect(page.getByRole('img', { name: /Illustration for RouteFusion/ }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: /GitHub repository for RouteFusion/ }).first()).toHaveAttribute(
@@ -25,6 +29,18 @@ test('home shows name, intro, CTAs and every project in HTML', async ({ page }) 
   );
   await page.waitForTimeout(1500);
   expect(errors).toEqual([]);
+});
+
+test('primary navigation downloads the digital résumé', async ({ page, isMobile }) => {
+  await page.goto('/');
+  if (isMobile) {
+    await page.getByRole('button', { name: 'Open menu' }).click();
+  }
+  const resumeLink = isMobile
+    ? page.locator('#mobile-menu').getByRole('link', { name: /résumé/i })
+    : page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Resume' });
+  await expect(resumeLink).toHaveAttribute('href', '/DigitalVeeramalluSaiAbhiram.pdf');
+  await expect(resumeLink).toHaveAttribute('download', '');
 });
 
 test('the playground is gone', async ({ page, request }) => {
@@ -55,7 +71,7 @@ test('reduced motion keeps every illustration and all content', async ({ page })
 
 test('hero shows a single comic character in a 3D pop-up card, not a photo', async ({ page }) => {
   await page.goto('/');
-  const hero = page.getByRole('img', { name: /Let’s build!/ });
+  const hero = page.getByRole('img', { name: /Ideas to execution/ });
   await expect(hero).toBeVisible();
   await expect(hero.locator('svg')).toHaveCount(3); // back, mid and front layers
   expect((await page.request.get('/me/photo.png')).status()).toBe(404);
@@ -162,11 +178,14 @@ test('command palette opens with "?" and navigates', async ({ page, isMobile }) 
   await expect(page).toHaveURL('/work/imageguard');
 });
 
-test('résumé, sitemap and OG image are served', async ({ request }) => {
-  const pdf = await request.get('/resume.pdf');
+test('digital résumé, sitemap and OG image are served', async ({ request }) => {
+  const pdf = await request.get('/DigitalVeeramalluSaiAbhiram.pdf');
   expect(pdf.headers()['content-type']).toContain('application/pdf');
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-');
+  expect((await request.get('/resume.pdf')).status()).toBe(404);
   const sitemap = await (await request.get('/sitemap.xml')).text();
   expect(sitemap).toContain('/work/routefusion');
+  expect(sitemap).toContain('/DigitalVeeramalluSaiAbhiram.pdf');
   expect(sitemap).not.toContain('playground');
   const og = await request.get('/opengraph-image');
   expect(og.headers()['content-type']).toContain('image/png');

@@ -38,7 +38,7 @@ function buildKnowledge(): string {
 
   return `<portfolio>
 Name: ${c.name}. Role: ${c.role}. Location: ${c.location}. ${c.status}.
-Contact: ${c.email} or the form at /contact. Résumé: /resume.pdf. GitHub: ${c.socials.github}.
+Contact: ${c.email} or the form at /contact. Résumé: ${c.resumeUrl}. GitHub: ${c.socials.github}.
 Positioning: ${c.tagline} ${c.subline}
 Skills: ${skills}
 Education and certification:

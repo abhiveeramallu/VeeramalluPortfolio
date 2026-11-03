@@ -7,7 +7,7 @@ The main page is a bright editorial poster illustrated as comic panels: hand-dra
 - **Home**: magazine-cover hero, an "In this issue" contents list, a feature spread per project, an illustrated about section and contact.
 - **Projects** (`/work`, `/work/[slug]`): an index of every project plus smaller repositories, and case studies structured as overview → problem → goals & constraints → contribution → architecture → implementation → decisions → challenges → status & results → limitations → what I learned → next project.
 - **Honesty**: all project facts come from each GitHub repository; numbers cite the file they came from. See [docs/DECISIONS.md](docs/DECISIONS.md) and [docs/AUDIT.md](docs/AUDIT.md).
-- **Extras**: streaming AI assistant grounded in `data/content.ts` (works without an API key), command palette (`?` or ⌘K), `/resume.pdf` generated from content, dynamic OG images.
+- **Extras**: streaming AI assistant grounded in `data/content.ts` (works without an API key), command palette (`?` or ⌘K), downloadable digital résumé PDF, dynamic OG images.
 
 ## Setup
 
@@ -58,12 +58,12 @@ All optional — see [.env.example](.env.example).
 
 **All copy** lives in `data/content.ts`. When a project changes, update its entry from the repository (README, reports) — the content tests reject placeholder text and require every project to link to a GitHub repository.
 
-| Asset                   | Where                               | Notes                                                                                    |
-| ----------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------- |
-| Real project screenshot | `public/projects/<slug>/cover.webp` | Optional. When present it replaces the 3D illustration in the case-study header          |
-| LinkedIn                | `socials.linkedin` in content       | Empty by default (the URL could not be verified); links appear everywhere once it is set |
-| Email                   | `email` in content                  | Currently the public address on my GitHub commits                                        |
-| Résumé                  | generated from content at build     | Edit `lib/resume/build.ts` for layout; a test fails if it overflows one page             |
+| Asset                   | Where                                    | Notes                                                                                    |
+| ----------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Real project screenshot | `public/projects/<slug>/cover.webp`      | Optional. When present it replaces the 3D illustration in the case-study header          |
+| LinkedIn                | `socials.linkedin` in content            | Empty by default (the URL could not be verified); links appear everywhere once it is set |
+| Email                   | `email` in content                       | Currently the public address on my GitHub commits                                        |
+| Résumé                  | `public/DigitalVeeramalluSaiAbhiram.pdf` | Replace this PDF to update the downloadable digital résumé                               |
 
 ## Performance notes
 
@@ -80,4 +80,4 @@ All optional — see [.env.example](.env.example).
 - [ ] `NEXT_PUBLIC_ENABLE_ANALYTICS=true` (optional)
 - [ ] Check `/opengraph-image` and a case study's OG card in a social preview tool
 - [ ] Submit `/sitemap.xml` in Google Search Console
-- [ ] Open `/resume.pdf` and check it reads correctly
+- [ ] Download the digital résumé and check it reads correctly

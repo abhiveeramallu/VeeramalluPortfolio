@@ -16,5 +16,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'monthly' as const,
     priority: 0.9,
   }));
-  return [...pages, ...projects, { url: absoluteUrl('/resume.pdf'), lastModified: now, priority: 0.6 }];
+  return [
+    ...pages,
+    ...projects,
+    { url: absoluteUrl(SITE_CONFIG.resumeUrl), lastModified: now, priority: 0.6 },
+  ];
 }

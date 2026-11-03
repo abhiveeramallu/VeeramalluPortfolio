@@ -209,6 +209,7 @@ function Sticker({
   fill,
   rot = 0,
   delay = '0s',
+  caption,
   children,
 }: {
   x: number;
@@ -216,8 +217,12 @@ function Sticker({
   fill: string;
   rot?: number;
   delay?: string;
+  /** A short comic-lettered tag under the sticker, kept inside the 400-unit-wide panel. */
+  caption?: string;
   children: ReactNode;
 }) {
+  const capW = caption ? Math.round(caption.length * 6.2 + 16) : 0;
+  const capX = Math.min(Math.max(x + 28 - capW / 2, 4), 396 - capW);
   return (
     <g className="drift" style={{ ['--delay' as string]: delay, ['--dur' as string]: '7s' } as CSSProperties}>
       <g transform={`rotate(${rot} ${x + 28} ${y + 22})`}>
@@ -225,6 +230,31 @@ function Sticker({
         <rect x={x} y={y} width="56" height="44" rx="10" fill={fill} {...ink} />
         {children}
       </g>
+      {caption && (
+        <g>
+          <rect x={capX + 2} y={y + 54} width={capW} height="20" rx="10" fill={INK} />
+          <rect
+            x={capX}
+            y={y + 52}
+            width={capW}
+            height="20"
+            rx="10"
+            fill={C.paper}
+            {...ink}
+            strokeWidth={2}
+          />
+          <text
+            x={capX + capW / 2}
+            y={y + 66.5}
+            textAnchor="middle"
+            fontSize="12"
+            fill={INK}
+            style={{ fontFamily: 'var(--font-comic), Impact, sans-serif', letterSpacing: '0.04em' }}
+          >
+            {caption}
+          </text>
+        </g>
+      )}
     </g>
   );
 }
@@ -271,15 +301,15 @@ function Hero(): Layers {
     front: (
       <>
         <Peep name="peep-8" uid="hero" x={206} y={304} h={262} tint={C.blueDeep} />
-        <Bubble x={14} y={18} text="LET'S BUILD!" tailX={120} size={20} />
-        <Sticker x={300} y={30} fill={C.paper} rot={8} delay="-1s">
+        <Bubble x={14} y={18} text="IDEAS → EXECUTION" tailX={150} size={20} />
+        <Sticker x={300} y={30} fill={C.paper} rot={8} delay="-1s" caption="CODE MODE: ON">
           <CodeIcon x={300} y={30} />
         </Sticker>
         <Sticker x={22} y={150} fill={C.yellow} rot={-8} delay="-3s">
           <ChartIcon x={22} y={150} />
         </Sticker>
-        <Sticker x={318} y={176} fill={C.green} rot={6} delay="-5s">
-          <ShieldIcon x={318} y={176} />
+        <Sticker x={318} y={168} fill={C.green} rot={6} delay="-5s" caption="BUILT TO BE SECURE">
+          <ShieldIcon x={318} y={168} />
         </Sticker>
         <Sparkle x={282} y={118} r={10} fill={C.paper} />
       </>

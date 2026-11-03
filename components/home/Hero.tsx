@@ -1,17 +1,20 @@
 import Link from 'next/link';
-import { ArrowDown, FileDown } from 'lucide-react';
-import { SITE_CONFIG } from '@/data/content';
-import { TrackedLink } from '@/components/ui/TrackedLink';
+import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import { Illustration } from '@/components/illustrations/Illustration';
 
-const TAGS = ['AI / ML', 'Full-stack', 'Security', 'Creative engineering'];
+const TAGS = ['AI / ML', 'Full-stack', 'Cybersecurity', 'Embedded systems'];
+
+// Homepage-only copy. Kept here rather than in SITE_CONFIG so the résumé, chat and metadata are unaffected.
+const HEADLINE =
+  'I build intelligent systems, full-stack products, and occasionally teach machines to talk to hardware.';
+const INTRO =
+  'Computer Science student at VIT Vellore, graduating in 2027. I work at the intersection of AI/ML, full-stack engineering, cybersecurity, and embedded systems — turning complex ideas into things that actually work.';
 
 /**
  * Main-page cover on hot orange: text on the left, a 3D pop-up illustration on the right that turns towards
  * the pointer.
  */
 export function Hero() {
-  const live = SITE_CONFIG.projects.filter((p) => p.liveUrl).length;
   return (
     <section
       aria-labelledby="hero-title"
@@ -19,18 +22,16 @@ export function Hero() {
     >
       <div className="relative mx-auto max-w-[1440px] px-4 md:px-10">
         <div className="label flex flex-wrap items-center justify-between gap-3 border-y-2 border-[#16121f] py-2.5">
-          <span>Issue Nº 01 — Portfolio</span>
-          <span className="hidden sm:inline">Vellore, India</span>
-          <span>
-            {SITE_CONFIG.projects.length} projects · {live} live demos
-          </span>
+          <span>Veeramallu Sai Abhiram</span>
+          <span>Full Stack &amp; AI Engineer</span>
+          <span>Visakhapatnam, India</span>
         </div>
 
         <div className="grid items-center gap-6 lg:grid-cols-[0.8fr_1.2fr]">
           <div className="relative z-10 py-10 lg:py-20">
             <div className="hero-in relative inline-block rounded-[28px] border-[3px] border-[#16121f] bg-[#fff3e6] px-6 py-3 shadow-[6px_6px_0_0_#16121f]">
               <p className="font-[family-name:var(--font-slab)] text-step-3 leading-none text-[#c2410c]">
-                Hello!
+                Hello, World!
               </p>
               <span
                 aria-hidden
@@ -39,19 +40,22 @@ export function Hero() {
             </div>
             <h1
               id="hero-title"
-              className="hero-in mt-8 font-[family-name:var(--font-slab)] text-step-4 leading-[0.95]"
+              className="hero-in mt-8 font-[family-name:var(--font-slab)] text-step-4 leading-[0.92]"
             >
-              I’m <span className="ink-shadow text-[#fff3e6]">Abhiram</span>
+              I’m
+              <span className="ink-shadow block text-[clamp(3.6rem,2.2rem+5.6vw,7.5rem)] leading-[0.92] text-[#fff3e6]">
+                Abhiram.
+              </span>
               <span className="sr-only"> — Veeramallu Sai Abhiram</span>
             </h1>
             <p
               className="hero-in mt-5 max-w-lg font-display text-step-1 font-medium leading-snug"
               style={{ animationDelay: '120ms' }}
             >
-              {SITE_CONFIG.tagline}
+              {HEADLINE}
             </p>
             <p className="hero-in mt-4 max-w-md leading-relaxed" style={{ animationDelay: '200ms' }}>
-              {SITE_CONFIG.subline}
+              {INTRO}
             </p>
             <ul
               aria-label="What I work on"
@@ -73,31 +77,22 @@ export function Hero() {
                 href="#projects"
                 className="btn bg-[#16121f] text-[#fff3e6] shadow-[4px_4px_0_0_#fff3e6] hover:-translate-y-0.5"
               >
-                Explore projects <ArrowDown size={15} aria-hidden />
+                See what I’ve built <ArrowDown size={15} aria-hidden />
               </Link>
-              <TrackedLink
-                href="/resume.pdf"
-                download
-                event="resume_download"
-                props={{ location: 'hero' }}
+              <Link
+                href="#contact"
                 className="btn border-2 border-[#16121f] bg-[#fff3e6] text-[#16121f] shadow-[4px_4px_0_0_#16121f] hover:-translate-y-0.5"
               >
-                <FileDown size={15} aria-hidden /> Résumé
-              </TrackedLink>
+                Let’s connect <ArrowUpRight size={15} aria-hidden />
+              </Link>
             </div>
           </div>
 
           <div className="group relative py-6 lg:py-16">
-            <p
-              aria-hidden
-              className="pointer-events-none absolute -top-2 right-2 z-20 hidden rotate-6 font-display text-step-1 italic lg:block"
-            >
-              hover me ↓
-            </p>
             <Illustration
               priority
               scene="hero"
-              label="Comic illustration: Abhiram in front of a starburst saying &#8220;Let&#8217;s build!&#8221;, with code, chart and shield stickers floating around."
+              label="Comic illustration: Abhiram in front of a starburst saying &#8220;Ideas to execution&#8221;, with stickers reading &#8220;Code mode: on&#8221; and &#8220;Built to be secure&#8221; floating around."
               className="mx-auto max-w-[680px]"
             />
           </div>

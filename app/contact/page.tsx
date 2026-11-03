@@ -51,7 +51,7 @@ export default function ContactPage() {
           </dl>
           <div className="mt-8 flex flex-wrap gap-3">
             <TrackedLink
-              href="/resume.pdf"
+              href={SITE_CONFIG.resumeUrl}
               event="resume_download"
               props={{ location: 'contact_page' }}
               className="btn-secondary"

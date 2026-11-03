@@ -89,6 +89,7 @@ export const SITE_CONFIG = {
   shortName: 'Abhiram',
   displayName: 'ABHIRAM',
   initials: 'VSA',
+  resumeUrl: '/DigitalVeeramalluSaiAbhiram.pdf',
   brandName: 'abhiram.design',
   role: 'Computer Science student & software engineer',
   location: 'Vellore, India',

@@ -28,7 +28,7 @@ export function Contact() {
               Send a message
             </Link>
             <TrackedLink
-              href="/resume.pdf"
+              href={SITE_CONFIG.resumeUrl}
               download
               event="resume_download"
               props={{ location: 'home-contact' }}

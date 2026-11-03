@@ -58,7 +58,7 @@ export default function AboutPage() {
           </div>
           <div className="mt-10 flex flex-wrap gap-3">
             <TrackedLink
-              href="/resume.pdf"
+              href={SITE_CONFIG.resumeUrl}
               download
               event="resume_download"
               props={{ location: 'about' }}

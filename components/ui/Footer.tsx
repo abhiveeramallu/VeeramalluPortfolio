@@ -33,7 +33,11 @@ export function Footer() {
               </li>
             ))}
             <li>
-              <a href="/resume.pdf" className="inline-block py-1 text-ink underline-offset-4 hover:underline">
+              <a
+                href={SITE_CONFIG.resumeUrl}
+                download
+                className="inline-block py-1 text-ink underline-offset-4 hover:underline"
+              >
                 Résumé (PDF)
               </a>
             </li>

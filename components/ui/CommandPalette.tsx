@@ -100,7 +100,10 @@ export function CommandPalette() {
         keywords: 'cv resume',
         run: () => {
           track('resume_download', { location: 'palette' });
-          window.location.href = '/resume.pdf';
+          const link = document.createElement('a');
+          link.href = SITE_CONFIG.resumeUrl;
+          link.download = 'DigitalVeeramalluSaiAbhiram.pdf';
+          link.click();
         },
       },
       {
