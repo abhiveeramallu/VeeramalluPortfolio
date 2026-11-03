@@ -712,6 +712,76 @@ function Racks(): Layers {
   });
 }
 
+/* Secure Messaging — a message hops from one phone to the other and comes back read. */
+function Phone({ x, y, w, h, fill }: { x: number; y: number; w: number; h: number; fill: string }) {
+  return (
+    <g>
+      <rect x={x} y={y} width={w} height={h} rx="12" fill={C.charcoal} {...ink} strokeWidth={3} />
+      <rect x={x + 6} y={y + 12} width={w - 12} height={h - 24} rx="6" fill={fill} />
+      <rect x={x + w / 2 - 8} y={y + 4} width="16" height="3.5" rx="1.75" fill={C.greyDeep} />
+    </g>
+  );
+}
+
+function Chat(): Layers {
+  return panel({
+    uid: 'chat',
+    peep: 'peep-10',
+    side: 'left',
+    tint: C.blueDeep,
+    burst: C.yellow,
+    bubble: 'READ BY ALL!',
+    props: (
+      <>
+        <Phone x={222} y={92} w={78} h={140} fill={C.sky} />
+        <rect x="234" y="114" width="40" height="14" rx="7" fill={C.paper} {...ink} strokeWidth={1.8} />
+        <rect x="248" y="136" width="44" height="14" rx="7" fill={C.blue} {...ink} strokeWidth={1.8} />
+        <rect x="234" y="158" width="32" height="14" rx="7" fill={C.paper} {...ink} strokeWidth={1.8} />
+        <g>
+          {[244, 256, 268].map((cx, i) => (
+            <circle
+              key={cx}
+              className="blink-light"
+              style={{ animationDelay: `${i * 0.2}s` }}
+              cx={cx}
+              cy="208"
+              r="3.5"
+              fill={C.greyDeep}
+            />
+          ))}
+        </g>
+        <g className="bob">
+          <Phone x={318} y={140} w={66} h={120} fill={C.paper} />
+          <rect x="328" y="160" width="36" height="12" rx="6" fill={C.sky} {...ink} strokeWidth={1.6} />
+          <rect x="336" y="180" width="40" height="12" rx="6" fill={C.blue} {...ink} strokeWidth={1.6} />
+          <path
+            d="M340 206 l 5 5 l 9 -10 M350 206 l 5 5 l 9 -10"
+            stroke={C.blueDeep}
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </g>
+        <g className="hover-shift" style={shift(56, 44)}>
+          <path
+            d="M262 64 h 44 a 10 10 0 0 1 10 10 v 10 a 10 10 0 0 1 -10 10 h -30 l -12 9 v -9 h -2 a 10 10 0 0 1 -10 -10 v -10 a 10 10 0 0 1 10 -10 z"
+            fill={C.green}
+            {...ink}
+            strokeWidth={2.4}
+          />
+          <path d="M268 79 h 32" stroke={INK} strokeWidth="3" strokeLinecap="round" />
+        </g>
+        <g className="drift">
+          <path d="M346 104 v -10 a 12 12 0 0 1 24 0 v 10" {...ink} strokeWidth={4} fill="none" />
+          <rect x="340" y="102" width="36" height="28" rx="6" fill={C.yellow} {...ink} />
+          <circle cx="358" cy="116" r="3.5" fill={INK} />
+        </g>
+      </>
+    ),
+  });
+}
+
 /* About — me, with the things my projects are made of floating around. */
 function About(): Layers {
   return panel({
@@ -784,6 +854,7 @@ const SCENES: Record<SceneId, { bg: string; draw: () => Layers }> = {
   greenhouse: { bg: '#8fd3c1', draw: Greenhouse },
   sheets: { bg: C.pink, draw: Sheets },
   racks: { bg: '#9fc0ef', draw: Racks },
+  chat: { bg: '#ffb3a7', draw: Chat },
   about: { bg: C.yellow, draw: About },
   contact: { bg: C.blue, draw: Contact },
 };
@@ -800,6 +871,7 @@ export const SCENE_PEEP: Record<SceneId, PeepName> = {
   greenhouse: 'peep-79',
   sheets: 'peep-39',
   racks: 'peep-25',
+  chat: 'peep-10',
   about: 'peep-8',
   contact: 'peep-8',
 };

@@ -9,6 +9,9 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
+  async redirects() {
+    return [{ source: '/projects', destination: '/work', permanent: true }];
+  },
   async headers() {
     return [
       {

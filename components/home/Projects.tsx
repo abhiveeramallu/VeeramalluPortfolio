@@ -80,20 +80,15 @@ export function Projects() {
           })}
         </div>
 
-        <Link
-          href="/work#archive"
-          className="group mt-28 flex items-center justify-between gap-6 rounded-card border border-line bg-surface p-8 transition-colors hover:border-accent"
-        >
-          <span className="font-display text-step-2 font-semibold">
-            {SITE_CONFIG.archive.length} more repositories in the{' '}
-            <span className="accent-word text-accent">index</span>
-          </span>
-          <ArrowRight
-            size={28}
-            aria-hidden
-            className="shrink-0 transition-transform group-hover:translate-x-2"
-          />
-        </Link>
+        <div className="mt-28 flex justify-center">
+          <Link
+            href="/work"
+            className="btn group bg-[#16121f] text-[#fff8ee] shadow-[4px_4px_0_0_#ff5a1f] hover:-translate-y-0.5"
+          >
+            See all {SITE_CONFIG.projects.length + SITE_CONFIG.archive.length} projects
+            <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
       </div>
     </section>
   );

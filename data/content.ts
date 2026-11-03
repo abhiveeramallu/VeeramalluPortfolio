@@ -28,7 +28,8 @@ export type IllustrationKind =
   | 'board'
   | 'greenhouse'
   | 'sheets'
-  | 'racks';
+  | 'racks'
+  | 'chat';
 
 /** A number shown on the site, with the repository file it was copied from. */
 export interface Fact {
@@ -894,6 +895,105 @@ export const SITE_CONFIG = {
       ],
       learned: ['Optimisation only becomes useful once its inputs — counts and forecasts — are trustworthy.'],
     },
+    {
+      slug: 'secure-messaging',
+      title: 'Secure Messaging',
+      kind: 'Engineering project',
+      category: 'Full-stack · Real-time',
+      status: 'Live demo',
+      period: 'Oct 2026',
+      summary:
+        'Signal-inspired messaging app with direct and group chats over one authenticated WebSocket, delivery and read receipts, typing indicators, presence and membership-checked file attachments.',
+      stack: [
+        'Next.js',
+        'React',
+        'TypeScript',
+        'Tailwind CSS',
+        'FastAPI',
+        'SQLAlchemy',
+        'SQLite',
+        'WebSockets',
+      ],
+      illustration: 'chat',
+      repoUrl: `${GH}/SignalAppClone`,
+      liveUrl: 'https://signal-app-clone.vercel.app',
+      overview:
+        'An educational clone of a modern messenger: sign up with a mocked OTP, find people by username, chat one to one or in groups, and see messages move from sent to delivered to read in real time.',
+      problem:
+        'Real-time chat looks simple but needs careful state: who may read what, which messages each person has received, and what happens when a connection drops.',
+      whyItMatters:
+        'Messaging is a compact test of full-stack engineering — authorisation, real-time delivery, persistence and a responsive UI all have to agree.',
+      goals: [
+        'Direct and group conversations with persistent, paginated history.',
+        'Per-recipient delivery and read receipts, typing indicators and live presence.',
+        'Every route and WebSocket event checks conversation membership on the server.',
+      ],
+      constraints: [
+        'Built for an SDE full-stack assignment; it is not the real Signal app and is not affiliated with Signal Messenger LLC.',
+        'No real Signal Protocol or end-to-end encryption, and OTP verification is a fixed, disclosed demo code.',
+      ],
+      contribution:
+        'My own repository, built end to end: the FastAPI back end, data model, WebSocket protocol and tests, and the Next.js front end.',
+      architecture: {
+        summary:
+          'A Next.js front end on Vercel talks to a FastAPI back end on Render over REST (bearer JWT) and a single authenticated WebSocket.',
+        flow: [
+          'Next.js 16 + React 19 UI: navigation rail, conversation list, chat view, light / dark / system themes',
+          'FastAPI REST routes for auth, contacts, users, conversations, messages and uploads',
+          'One /ws endpoint: authenticate handshake, then send, delivered, read, typing and group events',
+          'SQLAlchemy 2.0 over SQLite: users, conversations, participants, messages, per-recipient status',
+          'Uploads stored under random names and served only to conversation members',
+        ],
+      },
+      implementation: [
+        {
+          title: 'Receipts that only move forward',
+          body: 'Each recipient has their own status row, so a message moves sent → delivered → read independently for every person and never goes backwards.',
+        },
+        {
+          title: 'Presence from real connections',
+          body: 'Online status comes from the live WebSocket connection count, so a user with several tabs only goes offline when the last one closes.',
+        },
+        {
+          title: 'Safe attachments',
+          body: 'Uploads are checked against an extension and MIME-type allowlist, capped at 10 MB while streaming, saved under a random name and downloadable only by conversation members.',
+        },
+      ],
+      decisions: [
+        {
+          decision: 'Return 404, not 403, to non-members.',
+          because: 'A 403 would confirm that a conversation or file exists.',
+        },
+        {
+          decision: 'WebSocket events carry IDs; clients refetch state over REST.',
+          because: 'Group changes and reconnects then always resync from one authoritative source.',
+        },
+        {
+          decision: 'Send the JWT in the first WebSocket message, not the URL.',
+          because: 'URLs end up in logs; the message body does not.',
+        },
+      ],
+      challenges: [
+        'Keeping receipts, unread counts and presence consistent across reconnects and multiple tabs.',
+        'Group administration rules, such as never removing or demoting the last admin.',
+      ],
+      currentStatus:
+        'Deployed as a public demo (front end on Vercel, back end on Render) with seeded demo users.',
+      facts: [
+        { label: 'Backend tests', value: '216 passing', source: 'README.md §14' },
+        { label: 'Attachment limit', value: '10 MB', source: 'README.md §4' },
+        { label: 'Seeded demo users', value: '5', source: 'README.md §13' },
+      ],
+      limitations: [
+        'No end-to-end encryption; it should not be described as production-secure.',
+        'The JWT lives in localStorage, and the WebSocket manager is in-memory in a single process.',
+        'SQLite and uploaded files sit on Render’s ephemeral disk and are lost on redeploy.',
+        'Calls and Stories are UI placeholders; reactions, replies and disappearing messages are not built.',
+      ],
+      learned: [
+        'Real-time features are mostly about authorisation and resynchronisation, not about sending bytes.',
+      ],
+    },
   ] as ProjectItem[],
 
   /** Smaller or earlier repositories, linked without case studies. */
@@ -905,14 +1005,6 @@ export const SITE_CONFIG = {
       stack: 'Python · WebSockets · JWT',
       url: `${GH}/Tickbooking`,
       liveUrl: 'https://tickbooking-13s574d7i-abhis-projects-4750c1f6.vercel.app/',
-    },
-    {
-      name: 'Secure Messaging — Signal-inspired clone',
-      description:
-        'Educational full-stack messaging app with contacts, direct and group chats. It does not implement the Signal Protocol, and says so.',
-      stack: 'Next.js · FastAPI · SQLAlchemy',
-      url: `${GH}/SignalAppClone`,
-      liveUrl: 'https://signal-app-clone.vercel.app',
     },
     {
       name: 'GreenTwin AI',
@@ -942,6 +1034,49 @@ export const SITE_CONFIG = {
       description: 'Python tool that discovers and monitors devices on a local network using Scapy.',
       stack: 'Python · Scapy',
       url: `${GH}/ShadowHunter-Network-Monitoring-Tool`,
+    },
+    {
+      name: 'Bot Detection with AI',
+      description:
+        'Login-page bot detection that scores mouse, keystroke and timing signals, invisible honeypot fields and automation checks, with an admin log and Selenium, Puppeteer and Playwright attack scripts to test it.',
+      stack: 'Node.js · Express · Playwright',
+      url: `${GH}/Bot-detection`,
+      liveUrl: 'https://bot-detection-amber.vercel.app',
+    },
+    {
+      name: 'Semantic Search + Semantic Cache',
+      description:
+        'Search over the 20 Newsgroups corpus: MiniLM embeddings in FAISS, fuzzy C-means clustering and a cluster-aware semantic cache written from scratch, served by FastAPI.',
+      stack: 'Python · FastAPI · FAISS',
+      url: `${GH}/NewsGroups`,
+    },
+    {
+      name: 'Hospital Data Management System',
+      description:
+        'Web app for patient records, triage, diagnosis, lab tests, pharmacy dispensing, billing and staff management.',
+      stack: 'PHP · MySQL',
+      url: `${GH}/Hospital-Data-Management-System-`,
+    },
+    {
+      name: 'ImageGuard (earlier repository)',
+      description:
+        'A separate ImageGuard repository with copy-move forgery detection, visible and invisible watermarking and an attack lab. The case study above is based on Image_Guard.',
+      stack: 'React · FastAPI · OpenCV',
+      url: `${GH}/ImageGuard`,
+    },
+    {
+      name: 'PDF Chatbot (Flask)',
+      description:
+        'Upload a PDF and chat with Gemini about it; each user keeps their own chat history and document context.',
+      stack: 'Python · Flask · Gemini',
+      url: `${GH}/chatbot-for-PDFs`,
+    },
+    {
+      name: 'AI PDF Chatbot (Streamlit)',
+      description:
+        'Streamlit app that extracts a PDF’s text with pdfplumber and answers questions about it with Gemini.',
+      stack: 'Python · Streamlit · Gemini',
+      url: `${GH}/pythonchatbott`,
     },
   ] as ArchiveRepo[],
 

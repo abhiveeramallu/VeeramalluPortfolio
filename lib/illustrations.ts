@@ -18,4 +18,5 @@ export const ILLUSTRATION_DESCRIPTIONS: Record<IllustrationKind, string> = {
     'comic panel — a man with a phone says "Stays on my laptop!" while a shy paper character is scanned next to a padlock.',
   racks:
     'comic panel — a man says "Shelf is low!" while a camera watches warehouse shelves with one gap outlined.',
+  chat: 'comic panel — a man says "Read by all!" as a green message hops from one phone to another, which shows two blue ticks, next to a padlock.',
 };

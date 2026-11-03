@@ -21,7 +21,7 @@ test('home shows name, intro, CTAs and every project in HTML', async ({ page }) 
     'href',
     '/DigitalVeeramalluSaiAbhiram.pdf',
   );
-  await expect(page.locator('article[id^="project-"]')).toHaveCount(9);
+  await expect(page.locator('article[id^="project-"]')).toHaveCount(10);
   await expect(page.getByRole('img', { name: /Illustration for RouteFusion/ }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: /GitHub repository for RouteFusion/ }).first()).toHaveAttribute(
     'href',
@@ -54,7 +54,7 @@ test('every project has its own illustration and no WebGL is loaded', async ({ p
   const errors = watchErrors(page);
   await page.goto('/');
   await page.mouse.move(300, 300);
-  await expect(page.locator('#projects .pop')).toHaveCount(9);
+  await expect(page.locator('#projects .pop')).toHaveCount(10);
   await expect(page.getByRole('img', { name: /Illustration for ThreatLensAI/ })).toBeVisible();
   await page.waitForTimeout(800);
   await expect(page.locator('canvas')).toHaveCount(0);
@@ -104,8 +104,30 @@ test('navigation reaches every top-level page', async ({ page, isMobile }) => {
     await expect(page).toHaveURL(path);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
   }
+  if (isMobile) await page.getByRole('button', { name: 'Open menu' }).click();
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: 'Projects', exact: true })
+    .or(page.locator('#mobile-menu').getByRole('link', { name: 'Projects', exact: true }))
+    .first()
+    .click();
+  await expect(page).toHaveURL('/work');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('built');
+  expect(errors).toEqual([]);
+});
+
+test('projects page lists everything and filters by area', async ({ page, request }) => {
+  const errors = watchErrors(page);
+  expect((await request.get('/projects', { maxRedirects: 0 })).status()).toBe(308);
   await page.goto('/work');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('archive');
+  const featured = page.locator('[data-areas]');
+  await expect(featured).toHaveCount(10);
+  await expect(page.locator('#archive h3')).toHaveCount(11);
+  await page.getByRole('button', { name: 'Embedded' }).click();
+  await expect(page.getByRole('button', { name: 'Embedded' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(featured.filter({ visible: true })).toHaveCount(1);
+  await page.getByRole('button', { name: 'All' }).click();
+  await expect(featured.filter({ visible: true })).toHaveCount(10);
   expect(errors).toEqual([]);
 });
 

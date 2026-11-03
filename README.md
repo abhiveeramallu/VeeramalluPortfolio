@@ -4,7 +4,7 @@ Portfolio of Veeramallu Sai Abhiram, Computer Science student at VIT Vellore (ex
 
 The main page is a bright editorial poster illustrated as comic panels: hand-drawn characters from [Open Peeps](https://www.openpeeps.com) (CC0) with a coloured "misprint" shadow, starbursts, halftone dots, speed lines and lettered speech bubbles. The hero shows a single protagonist; each project panel acts out what the project does. Every panel is presented in 3D like a pop-up book — three depth layers that separate as it turns towards the pointer — and parts animate on hover.
 
-- **Home**: magazine-cover hero, an "In this issue" contents list, a feature spread per project, an illustrated about section and contact.
+- **Home**: magazine-cover hero, a feature spread per project (all repositories are on `/work`), an illustrated about section and contact.
 - **Projects** (`/work`, `/work/[slug]`): an index of every project plus smaller repositories, and case studies structured as overview → problem → goals & constraints → contribution → architecture → implementation → decisions → challenges → status & results → limitations → what I learned → next project.
 - **Honesty**: all project facts come from each GitHub repository; numbers cite the file they came from. See [docs/DECISIONS.md](docs/DECISIONS.md) and [docs/AUDIT.md](docs/AUDIT.md).
 - **Extras**: streaming AI assistant grounded in `data/content.ts` (works without an API key), command palette (`?` or ⌘K), downloadable digital résumé PDF, dynamic OG images.
